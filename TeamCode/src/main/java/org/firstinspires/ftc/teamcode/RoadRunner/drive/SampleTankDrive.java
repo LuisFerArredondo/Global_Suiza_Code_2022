@@ -53,9 +53,9 @@ import java.util.List;
  */
 @Config
 public class SampleTankDrive extends TankDrive {
-    public static PIDCoefficients AXIAL_PID = new PIDCoefficients(2.6, 0, 1);
-    public static PIDCoefficients CROSS_TRACK_PID = new PIDCoefficients(0.61, 0, 1);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(2.5, 0, 0);
+    public static PIDCoefficients AXIAL_PID = new PIDCoefficients(0, 0, 0);
+    public static PIDCoefficients CROSS_TRACK_PID = new PIDCoefficients(0, 0, 0);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
 
     public static double VX_WEIGHT = 1;
     public static double OMEGA_WEIGHT = 1;
