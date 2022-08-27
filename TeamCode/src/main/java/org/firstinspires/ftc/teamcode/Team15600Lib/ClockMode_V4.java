@@ -24,6 +24,7 @@ import org.firstinspires.ftc.teamcode.Team15600Lib.Util.BrickSystem_V2;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.ColorFormatter;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.JustOnce;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,7 +38,7 @@ public abstract class ClockMode_V4 extends LinearOpMode {
     private static final String TELEOP_TAG = "TeleOp Thread State ";
     private static final String ENDGAME_TAG = "EndGame Thread State ";
 
-    private final List<BrickSystem_V2> m_subsystems = new LinkedList<>();
+    private final List<BrickSystem_V2> m_subsystems = new ArrayList<>();
 
     private Thread AutoThread;
     private Thread TeleOpThread;
@@ -125,7 +126,7 @@ public abstract class ClockMode_V4 extends LinearOpMode {
 
         // run the scheduler
         while (!isStopRequested() && opModeIsActive()) {
-            if (this.getClass().isAnnotationPresent(Autonomous.class))
+            if (competitionStages.equals(AUTONOMOUS))
                 telemetry.addData("Match Stage:", ColorFormatter.GREEN.format(competitionStages.toString()));
             else
                 telemetry.addData("Match Stage:", competitionStages.equals(TELEOP) ?
