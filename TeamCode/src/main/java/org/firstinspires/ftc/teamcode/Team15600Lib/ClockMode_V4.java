@@ -6,7 +6,9 @@ import static org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStage
 import static org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStages.TELEOP;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.Robot;
@@ -19,12 +21,10 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStages;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Threads.VisionThread;
-import org.firstinspires.ftc.teamcode.Team15600Lib.Util.BrickSystem;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.BrickSystem_V2;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.ColorFormatter;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.JustOnce;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,7 +38,9 @@ public abstract class ClockMode_V4 extends LinearOpMode {
     private static final String TELEOP_TAG = "TeleOp Thread State ";
     private static final String ENDGAME_TAG = "EndGame Thread State ";
 
-    private final List<BrickSystem_V2> m_subsystems = new ArrayList<>();
+    private final List<BrickSystem_V2> m_subsystems = new LinkedList<>();
+    protected TelemetryPacket packet;
+    protected Canvas fieldOverlay;
 
     private Thread AutoThread;
     private Thread TeleOpThread;
@@ -82,17 +84,19 @@ public abstract class ClockMode_V4 extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         /***************** Initializing OpMode **************************/
-        if (!this.getClass().isAnnotationPresent(Autonomous.class))
-            telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        //if (!this.getClass().isAnnotationPresent(Autonomous.class))
+        //   telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
         telemetry.setItemSeparator(" ‖ ");// ⁞, …, ¶
         telemetry.addData("Match Stage:", competitionStages.toString());
         telemetry.addData("Vision state", ColorFormatter.YELLOW.format("initializing"));
         RobotLog.dd(VISION_TAG, "on init");
-        telemetry.update();
+        //telemetry.update();
 
         double timeForTeleOp = getTeleOpTimeOut();
+        packet = new TelemetryPacket();
+        fieldOverlay = packet.fieldOverlay();
 
         JustOnce whenAutonomous = new JustOnce();
         JustOnce whenTeleOp = new JustOnce();
@@ -126,15 +130,15 @@ public abstract class ClockMode_V4 extends LinearOpMode {
 
         // run the scheduler
         while (!isStopRequested() && opModeIsActive()) {
-            if (competitionStages.equals(AUTONOMOUS))
-                telemetry.addData("Match Stage:", ColorFormatter.GREEN.format(competitionStages.toString()));
-            else
-                telemetry.addData("Match Stage:", competitionStages.equals(TELEOP) ?
-                        ColorFormatter.LIME.format(competitionStages.toString()) :
+            // if (this.getClass().isAnnotationPresent(Autonomous.class))
+            //else
+            telemetry.addData("Match Stage:", competitionStages.equals(AUTONOMOUS) ?
+                    ColorFormatter.GREEN.format(competitionStages.toString()) :
+                    competitionStages.equals(TELEOP) ?
+                            ColorFormatter.LIME.format(competitionStages.toString()) :
                             ColorFormatter.CYAN.format(competitionStages.toString()));
 
             telemetry.addData("Timer Counts", ColorFormatter.YELLOW.format(String.valueOf(matchTimer.seconds())) + "\n");
-
             switch (competitionStages) {
                 case AUTONOMOUS:
                     whenAutonomous.JustOneTime(true, () -> {
@@ -172,6 +176,12 @@ public abstract class ClockMode_V4 extends LinearOpMode {
                         }
                     });
                     break;
+            }
+
+            try {
+                FtcDashboard.getInstance().sendTelemetryPacket(packet);
+            }catch (Exception exception){
+                RobotLog.dd("FtcDash", exception.getMessage());
             }
 
             printSubsystemsStates();
