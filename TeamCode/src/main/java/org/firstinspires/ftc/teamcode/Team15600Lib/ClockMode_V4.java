@@ -39,8 +39,7 @@ public abstract class ClockMode_V4 extends LinearOpMode {
     private static final String ENDGAME_TAG = "EndGame Thread State ";
 
     private final List<BrickSystem_V2> m_subsystems = new LinkedList<>();
-    protected TelemetryPacket packet;
-    protected Canvas fieldOverlay;
+
 
     private Thread AutoThread;
     private Thread TeleOpThread;
@@ -95,8 +94,7 @@ public abstract class ClockMode_V4 extends LinearOpMode {
         //telemetry.update();
 
         double timeForTeleOp = getTeleOpTimeOut();
-        packet = new TelemetryPacket();
-        fieldOverlay = packet.fieldOverlay();
+
 
         JustOnce whenAutonomous = new JustOnce();
         JustOnce whenTeleOp = new JustOnce();
@@ -178,12 +176,6 @@ public abstract class ClockMode_V4 extends LinearOpMode {
                     break;
             }
 
-            try {
-                FtcDashboard.getInstance().sendTelemetryPacket(packet);
-            }catch (Exception exception){
-                RobotLog.dd("FtcDash", exception.getMessage());
-            }
-
             printSubsystemsStates();
             run();
         }
@@ -261,7 +253,6 @@ public abstract class ClockMode_V4 extends LinearOpMode {
         telemetry.clearAll();
         telemetry.update();
     }
-
 
     public abstract @NonNull CompetitionStages setMatchState();
 
