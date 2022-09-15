@@ -20,8 +20,8 @@ public class DriveConstants {
     /*
      * These are motor constants that should be listed online for your motors.
      */
-    public static final double TICKS_PER_REV = 1;
-    public static final double MAX_RPM = 1;
+    public static final double TICKS_PER_REV = 364.8988;
+    public static final double MAX_RPM = 460.40162368305952225658182487857;
 
     /*
      * Set RUN_USING_ENCODER to true to enable built-in hub velocity control using drive encoders.
@@ -32,8 +32,9 @@ public class DriveConstants {
      * from DriveVelocityPIDTuner.
      */
     public static final boolean RUN_USING_ENCODER = true;
-    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(0, 0, 0,
-            getMotorVelocityF(MAX_RPM / 60 * TICKS_PER_REV));
+    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(5.0, 0, 3.6,
+            13.0);//getMotorVelocityF(MAX_RPM / 60 * TICKS_PER_REV)  -KF Calculated by maxVeloTuner = 13.54
+                    //kp = 15, ki = 0, kd = 11, kf = 15
     /*
      * These are physical constants that can be determined from your robot (including the track
      * width; it will be tune empirically later although a rough estimate is important). Users are
@@ -43,7 +44,7 @@ public class DriveConstants {
      * convenience. Make sure to exclude any gear ratio included in MOTOR_CONFIG from GEAR_RATIO.
      */
     public static double WHEEL_RADIUS = 1.771655; // in
-    public static double GEAR_RATIO = 1.0; // output (wheel) speed / input (motor) speed (3.61:1) (1:13.0321)
+    public static double GEAR_RATIO = 1.0 * (42.0 / 41.5); // output (wheel) speed / input (motor) speed (3.61:1) (1:13.0321)
     public static double TRACK_WIDTH = 23.5; // in
 
     /*
@@ -63,9 +64,9 @@ public class DriveConstants {
      * small and gradually increase them later after everything is working. All distance units are
      * inches.
      */
-    public static double MAX_VEL = 30;//76.87;
+    public static double MAX_VEL = 25;//76.87;  30;
     public static double MAX_ACCEL = 30;
-    public static double MAX_ANG_VEL = Math.toRadians(60);
+    public static double MAX_ANG_VEL = 1.5;
     public static double MAX_ANG_ACCEL = Math.toRadians(60);
 
 

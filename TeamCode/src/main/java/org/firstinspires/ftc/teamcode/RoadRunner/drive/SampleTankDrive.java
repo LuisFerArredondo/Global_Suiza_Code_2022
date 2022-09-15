@@ -53,9 +53,9 @@ import java.util.List;
  */
 @Config
 public class SampleTankDrive extends TankDrive {
-    public static PIDCoefficients AXIAL_PID = new PIDCoefficients(0, 0, 0);
-    public static PIDCoefficients CROSS_TRACK_PID = new PIDCoefficients(0, 0, 0);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
+    public static PIDCoefficients AXIAL_PID = new PIDCoefficients(0.5, 0, 0);
+    public static PIDCoefficients CROSS_TRACK_PID = new PIDCoefficients(0.5,0,0);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(1, 0, 0);
 
     public static double VX_WEIGHT = 1;
     public static double OMEGA_WEIGHT = 1;
@@ -213,6 +213,7 @@ public class SampleTankDrive extends TankDrive {
 
     public void update() {
         updatePoseEstimate();
+
         DriveSignal signal = trajectorySequenceRunner.update(getPoseEstimate(), getPoseVelocity());
         if (signal != null) setDriveSignal(signal);
     }
@@ -324,5 +325,9 @@ public class SampleTankDrive extends TankDrive {
 
     public static TrajectoryAccelerationConstraint getAccelerationConstraint(double maxAccel) {
         return new ProfileAccelerationConstraint(maxAccel);
+    }
+
+    public double getBatteryVoltage(){
+        return batteryVoltageSensor.getVoltage();
     }
 }
