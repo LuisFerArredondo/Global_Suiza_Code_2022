@@ -41,7 +41,7 @@ public abstract class ClockMode extends LinearOpMode {
     }
 
     /**
-     * Schedules {@link com.arcrobotics.ftclib.command.Command} objects to the scheduler
+     * Schedules {@link Command} objects to the scheduler
      */
     public void schedule(Command... commands) {
         CommandScheduler.getInstance().schedule(commands);

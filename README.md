@@ -1,6 +1,6 @@
 # Team 15600 proyect template
 
-This proyect has been made with the following libraries:
+This proyect uses the following libraries:
 
 ### RoadRunner
 

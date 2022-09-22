@@ -58,7 +58,7 @@ public abstract class ClockMode_V3 extends LinearOpMode {
     }
 
     /**
-     * Registers {@link com.arcrobotics.ftclib.command.Subsystem} objects to the scheduler
+     * Registers {@link Subsystem} objects to the scheduler
      */
     public void register(Subsystem... subsystems) {
         CommandScheduler.getInstance().registerSubsystem(subsystems);
