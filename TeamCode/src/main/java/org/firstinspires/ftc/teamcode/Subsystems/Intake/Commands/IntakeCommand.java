@@ -35,7 +35,7 @@ public class IntakeCommand extends CommandBase {
                 else
                     intakeSubsystem.setActualState(IntakeState.IDLE);
                 intakeSubsystem.setIntakePower(0);
-                intakeSubsystem.setBlenderPower(0);
+                //intakeSubsystem.setBlenderPower(0);
                 break;
             case INTAKE:
                 if (isFilled) {
@@ -48,12 +48,12 @@ public class IntakeCommand extends CommandBase {
 
                 intakeSubsystem.setActualState(IntakeState.IS_PICKING);
                 intakeSubsystem.setIntakePower(1);
-                intakeSubsystem.setBlenderPower(1);
+                //intakeSubsystem.setBlenderPower(1);
                 break;
             case REJECT:
                 intakeSubsystem.setActualState(IntakeState.IS_REJECTING_AND_BLENDING);
                 intakeSubsystem.setIntakePower(-1);
-                intakeSubsystem.setBlenderPower(1);
+                //intakeSubsystem.setBlenderPower(1);
                 isFilled = false;
                 break;
         }

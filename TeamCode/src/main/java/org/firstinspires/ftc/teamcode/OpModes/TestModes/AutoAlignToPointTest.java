@@ -7,6 +7,7 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -16,8 +17,8 @@ import org.firstinspires.ftc.teamcode.RoadRunner.drive.SampleTankDrive;
 import org.firstinspires.ftc.teamcode.RoadRunner.util.DashboardUtil;
 
 
-@Config
 @TeleOp(group = "advanced")
+@Disabled
 public class AutoAlignToPointTest extends LinearOpMode{
         public static double DRAWING_TARGET_RADIUS = 2;
 

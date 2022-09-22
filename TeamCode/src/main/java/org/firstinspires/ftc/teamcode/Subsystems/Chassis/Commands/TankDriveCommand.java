@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Subsystems.Chassis.Commands;
 
 import static org.firstinspires.ftc.teamcode.Subsystems.Chassis.TankDriveSubsystem.DRAWING_TARGET_RADIUS;
+import static org.firstinspires.ftc.teamcode.Subsystems.Chassis.TankDriveSubsystem.getValueWithDeadBand;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
@@ -14,6 +15,10 @@ import org.firstinspires.ftc.teamcode.Subsystems.Chassis.Enums.DriveModes;
 import org.firstinspires.ftc.teamcode.Subsystems.Chassis.Enums.DriveTrajectories;
 import org.firstinspires.ftc.teamcode.Subsystems.Chassis.TankDriveSubsystem;
 import org.firstinspires.ftc.teamcode.Subsystems.Chassis.Enums.DriveStates;
+import org.firstinspires.ftc.teamcode.Subsystems.LinearSystem.Enums.LinearSystemModes;
+import org.firstinspires.ftc.teamcode.Subsystems.LinearSystem.LinearSystemSubsystem;
+import org.firstinspires.ftc.teamcode.Subsystems.Toucher.Enums.ToucheState;
+import org.firstinspires.ftc.teamcode.Subsystems.Toucher.ToucheSubsystem;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.JustOnce;
 
 import java.util.function.DoubleSupplier;
@@ -21,8 +26,12 @@ import java.util.function.DoubleSupplier;
 public class TankDriveCommand extends CommandBase {
 
     private final TankDriveSubsystem drive;
+    private ToucheSubsystem toucheSubsystem;
+    private LinearSystemSubsystem linearSystemSubsystem;
+
     private final DoubleSupplier leftY;
     private final DoubleSupplier rightX;
+    private double deadBand = 0;
     private JustOnce trajectoryJustOnce;
 
     private TrajectorySequence traj;
@@ -36,6 +45,22 @@ public class TankDriveCommand extends CommandBase {
         addRequirements(drive);
     }
 
+    public TankDriveCommand(TankDriveSubsystem drive, DoubleSupplier leftY, DoubleSupplier rightX, ToucheSubsystem toucheSubsystem) {
+        this(drive, leftY, rightX);
+        this.toucheSubsystem = toucheSubsystem;
+    }
+
+    public TankDriveCommand(TankDriveSubsystem drive, DoubleSupplier leftY, DoubleSupplier rightX, ToucheSubsystem toucheSubsystem, LinearSystemSubsystem linearSystemSubsystem) {
+        this(drive, leftY, rightX, toucheSubsystem);
+        //this.toucheSubsystem = toucheSubsystem;
+        this.linearSystemSubsystem = linearSystemSubsystem;
+    }
+
+    public TankDriveCommand(TankDriveSubsystem drive, DoubleSupplier leftY, DoubleSupplier rightX, double deadBand) {
+        this(drive, leftY, rightX);
+        this.deadBand = deadBand;
+    }
+
     @Override
     public void execute() {
         TelemetryPacket packet = new TelemetryPacket();
@@ -43,17 +68,18 @@ public class TankDriveCommand extends CommandBase {
 
         switch (drive.getActualMode()) {
             case MANUAL_DRIVE:
-                drive.drive(leftY.getAsDouble(), 0, rightX.getAsDouble());
+                drive.setActualTrajectoryMode(DriveTrajectories.NON_AUTO);
+                drive.drive(getValueWithDeadBand(leftY.getAsDouble(), 0.15), 0, rightX.getAsDouble());
                 drive.setActualState(DriveStates.MANUAL_DRIVE);
                 break;
 
             case AUTONOMOUS_DRIVE:
-                switch (drive.getActualTrajectory()){
+                switch (drive.getActualTrajectory()) {
                     case SELF_POSITIONING_HUMAN_PLAYER:
                         traj = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                                 .back(40)
                                 .setReversed(false)
-                                .splineTo(new Vector2d(-96,119), drive.getPoseEstimate().getHeading())
+                                .splineTo(new Vector2d(-96, 119), drive.getPoseEstimate().getHeading())
                                 //.back(70)
                                 //.forward(70)
                                 .build();
@@ -64,32 +90,43 @@ public class TankDriveCommand extends CommandBase {
                     case SELF_POSITIONING_CLIMBING:
                         traj = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                                 .setReversed(false)
-                                .splineTo(new Vector2d(-1,53), Math.toRadians(0))
+                                .splineTo(new Vector2d(-1, 53), Math.toRadians(0))
                                 //.back(70)
                                 //.forward(70)
                                 .build();
 
                         trajectoryJustOnce.JustOneTime(true, new TrajectoryFollowerCommand(drive, traj, true)::schedule);
 
-                        if(!drive.isBusy()){
+                        if (!drive.isBusy()) {
                             drive.setActualTrajectoryMode(DriveTrajectories.ADVANCING_TO_SINK);
                         }
                         break;
 
                     case ADVANCING_TO_SINK:
-                        traj = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                                .setReversed(false)
-                                //.splineTo(new Vector2d(-1,53), Math.toRadians(0))
-                                //.back(70)
-                                .forward(70)
-                                .build();
-
-                        trajectoryJustOnce.JustOneTime(true, new TrajectoryFollowerCommand(drive, traj, true)::schedule);
+                        //if (toucheSubsystem.getActualState().equals(ToucheState.IS_POSITIONED_TO_CRASH))
+                        if (toucheSubsystem.getActualState().equals(ToucheState.IS_ROBOT_POSITIONED)){
+                            drive.setActualTrajectoryMode(DriveTrajectories.PREPARING_TO_CLIMB);
+                            break;
+                        }
+                            drive.setMotorsPower(
+                                    toucheSubsystem.isLeftDetecting() ? 0 : -0.2
+                                    , toucheSubsystem.isRightDetecting()? 0 : -0.2
+                            );
                         break;
 
                     case PREPARING_TO_CLIMB:
+                        linearSystemSubsystem.setActualMode(LinearSystemModes.AUTOMATIC_ARM_UP);
+                        drive.setActualMode(DriveModes.MANUAL_DRIVE);
+                        //if (!linearSystemSubsystem.isMotorBusy())
+                        //drive.setActualTrajectoryMode(DriveTrajectories.HOOK_DEPOSED_AND_CLIMBING);
+                        break;
+
+                    case HOOK_DEPOSED_AND_CLIMBING:
+                        linearSystemSubsystem.setActualMode(LinearSystemModes.AUTOMATIC_RETRACTION);
+
                         break;
                     case NON_AUTO:
+
                         break;
                 }
                 break;
@@ -125,6 +162,7 @@ public class TankDriveCommand extends CommandBase {
                 drive.setActualMode(DriveModes.MANUAL_DRIVE);
                 break;
         }
+
         // Draw bot on canvas
         // x = 6m Total, y = 7m total
         fieldOverlay.setStroke("#3F51B5");
@@ -137,7 +175,7 @@ public class TankDriveCommand extends CommandBase {
             packet.put("Drive heading", Math.IEEEremainder(Math.toDegrees(drive.getPoseEstimate().getHeading()), 360));
             packet.put("Battery Voltage", drive.getBatteryVoltage());
 
-           // FtcDashboard.getInstance().sendTelemetryPacket(packet);
+            //FtcDashboard.getInstance().sendTelemetryPacket(packet);
             drive.getLocalizer().update();
             trajectoryJustOnce.resetFlagToFalse();
             //autonomousNeedAlign = false;

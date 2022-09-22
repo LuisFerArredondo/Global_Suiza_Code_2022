@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Subsystems.ClimberLock;
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoController;
@@ -14,19 +15,19 @@ import org.firstinspires.ftc.teamcode.Team15600Lib.Util.ColorFormatter;
 public class ClimberLockSubsystem extends BrickSystem_V3 {
     private Servo lock;
     private LockMode actualMode = LockMode.OPEN;
-    private LockStates actualState = LockStates.IS_OPENED;
+    private static LockStates actualState = LockStates.IS_OPENED;
 
-    private ServoController controllerEx;
 
     public ClimberLockSubsystem(HardwareMap hardwareMap){
         lock = hardwareMap.get(Servo.class, "SL");
 
+        lock.setDirection(Servo.Direction.REVERSE);
         //controllerEx = hardwareMap.get(ServoControllerEx.class, "SL");
-        controllerEx = lock.getController();
+        //controllerEx = lock.getController();
 
         setSubsystemState(actualState.toString());
-        setSubsystemTelemetryColor(ColorFormatter.ORANGE);
-        setName("Lockers");
+        setSubsystemTelemetryColor(ColorFormatter.LIME);
+        setName("Locker_S");
     }
 
     public void setLockPosition(double position){
@@ -41,7 +42,7 @@ public class ClimberLockSubsystem extends BrickSystem_V3 {
         this.actualMode = actualMode;
     }
 
-    public LockStates getActualState() {
+    public static LockStates getActualState() {
         return actualState;
     }
 
@@ -51,7 +52,7 @@ public class ClimberLockSubsystem extends BrickSystem_V3 {
 
     @Override
     public void periodic() {
-        setSubsystemState(getActualState().toString()
-                + "Servo Position based on Controller" + controllerEx.getServoPosition(lock.getPortNumber()));
+        setSubsystemState(getActualState().toString());
+                //+ "Servo Position based on Controller" + controllerEx.getServoPosition(lock.getPortNumber()));
     }
 }

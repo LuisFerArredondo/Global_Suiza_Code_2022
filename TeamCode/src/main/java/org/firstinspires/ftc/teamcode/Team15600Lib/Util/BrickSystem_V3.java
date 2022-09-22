@@ -6,6 +6,8 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.Subsystem;
 
+import org.firstinspires.ftc.teamcode.Team15600Lib.Util.Sensors.BrickSensor;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

@@ -292,12 +292,12 @@ public class SampleTankDrive extends TankDrive {
     }
 
     @Override
-    public void setMotorPowers(double v, double v1) {
+    public void setMotorPowers(double left, double right) {
         for (DcMotorEx leftMotor : leftMotors) {
-            leftMotor.setPower(v);
+            leftMotor.setPower(left);
         }
         for (DcMotorEx rightMotor : rightMotors) {
-            rightMotor.setPower(v1);
+            rightMotor.setPower(right);
         }
     }
 

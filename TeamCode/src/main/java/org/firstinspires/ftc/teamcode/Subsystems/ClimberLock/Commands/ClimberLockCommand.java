@@ -15,27 +15,24 @@ public class ClimberLockCommand extends CommandBase {
     }
 
     @Override
-    public void initialize() {
-
-    }
+    public void initialize() {}
 
     @Override
     public void execute() {
         switch (climberLockSubsystem.getActualMode()) {
             case OPEN:
-                climberLockSubsystem.setLockPosition(0.55);
+                climberLockSubsystem.setLockPosition(0);
                 climberLockSubsystem.setActualState(LockStates.IS_OPENED);
                 break;
             case CLOSE:
-                climberLockSubsystem.setLockPosition(0.4);
-                climberLockSubsystem.setActualState(LockStates.IS_OPENED);
+                climberLockSubsystem.setLockPosition(1);
+                climberLockSubsystem.setActualState(LockStates.IS_CLOSED);
                 break;
         }
     }
 
     @Override
-    public void end(boolean interrupted) {
-    }
+    public void end(boolean interrupted) {}
 
     @Override
     public boolean isFinished() {

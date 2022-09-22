@@ -16,14 +16,14 @@ import org.firstinspires.ftc.teamcode.Team15600Lib.Util.ColorFormatter;
 
 public class IntakeSubsystem extends BrickSystem_V3 {
     private DcMotorEx intakeMotor;
-    private CRServo blender;
+    //private CRServo blender;
     private IntakeState actualState = IntakeState.IDLE;
     private IntakeMode actualMode = IntakeMode.OFF;
 
     public IntakeSubsystem(HardwareMap hardwareMap){
         intakeMotor = hardwareMap.get(DcMotorEx.class, "Itk");
 
-        blender =  hardwareMap.get(CRServo.class, "SB");
+        //blender =  hardwareMap.get(CRServo.class, "SB");
         intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -51,9 +51,9 @@ public class IntakeSubsystem extends BrickSystem_V3 {
         this.actualMode = actualMode;
     }
 
-    public void setBlenderPower(double power){
-        blender.setPower(power);
-    }
+    //public void setBlenderPower(double power){
+    //    blender.setPower(power);
+    //}
 
     public double getMotorCurrent(){
         return intakeMotor.getCurrent(CurrentUnit.AMPS);

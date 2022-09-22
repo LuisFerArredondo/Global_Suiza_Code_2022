@@ -1,11 +1,16 @@
 package org.firstinspires.ftc.teamcode.Subsystems.Toucher.Commands;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.Subsystems.Toucher.Enums.ToucheState;
 import org.firstinspires.ftc.teamcode.Subsystems.Toucher.ToucheSubsystem;
 
+@Config
 public class ToucheCommand extends CommandBase {
+    public static double Left_Servo_Pos = 0.3;
+    public static double Right_Servo_Pos = 0.32;
+
     private ToucheSubsystem toucheSubsystem;
     private int targetPos = 0;
 
@@ -16,57 +21,41 @@ public class ToucheCommand extends CommandBase {
     }
 
     @Override
-    public void initialize() {}
+    public void initialize() {
+    }
 
     @Override
     public void execute() {
-        switch (toucheSubsystem.getActualMode()){
+        switch (toucheSubsystem.getActualMode()) {
             case TOUCHE_MODE:
-                targetPos = 0;
-                toucheSubsystem.setLeftArmTicks(targetPos);
-                toucheSubsystem.setLeftArmPower(1);
+                toucheSubsystem.setLeftArmPosition(Left_Servo_Pos);
+                toucheSubsystem.setRightArmPosition(Right_Servo_Pos);
 
-                toucheSubsystem.setRightArmTicks(targetPos);
-                toucheSubsystem.setRightArmPower(1);
+                if(toucheSubsystem.isLeftDetecting() && toucheSubsystem.isRightDetecting())
+                    toucheSubsystem.setActualState(ToucheState.IS_ROBOT_POSITIONED);
 
-                if(!toucheSubsystem.areMotorsBusy())
-                toucheSubsystem.setActualState(ToucheState.POSITIONED_TO_CRASH);
+                else if(toucheSubsystem.isLeftDetecting())
+                    toucheSubsystem.setActualState(ToucheState.IS_LEFT_POSITIONED);
+
+                else if(toucheSubsystem.isRightDetecting())
+                    toucheSubsystem.setActualState(ToucheState.IS_RIGHT_POSITIONED);
+
                 else
-                    toucheSubsystem.setActualState(ToucheState.POSITIONING_TO_CRASH);
+                    toucheSubsystem.setActualState(ToucheState.IS_POSITIONED_TO_CRASH);
                 break;
 
             case RETRACT:
-                targetPos = 0;
-                toucheSubsystem.setLeftArmTicks(targetPos);
-                toucheSubsystem.setLeftArmPower(1);
+                toucheSubsystem.setRightArmPosition(0);
+                toucheSubsystem.setLeftArmPosition(0);
 
-                toucheSubsystem.setRightArmTicks(targetPos);
-                toucheSubsystem.setRightArmPower(1);
-
-                if(!toucheSubsystem.areMotorsBusy())
-                    toucheSubsystem.setActualState(ToucheState.RETRACTED);
-                else
-                    toucheSubsystem.setActualState(ToucheState.RETRACTING);
-                break;
-
-            case CLIMB_MODE:
-                targetPos = 0;
-                toucheSubsystem.setLeftArmTicks(targetPos);
-                toucheSubsystem.setLeftArmPower(1);
-
-                toucheSubsystem.setRightArmTicks(targetPos);
-                toucheSubsystem.setRightArmPower(1);
-
-                if(!toucheSubsystem.areMotorsBusy())
-                    toucheSubsystem.setActualState(ToucheState.CLIMB_IS_CORRECTED);
-                else
-                    toucheSubsystem.setActualState(ToucheState.IS_CORRECTING_CLIMB);
+                toucheSubsystem.setActualState(ToucheState.RETRACTED);
                 break;
         }
     }
 
     @Override
-    public void end(boolean interrupted) {}
+    public void end(boolean interrupted) {
+    }
 
     @Override
     public boolean isFinished() {

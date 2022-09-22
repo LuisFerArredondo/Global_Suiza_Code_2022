@@ -10,6 +10,7 @@ import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.firstinspires.ftc.teamcode.Team15600Lib.ClockMode_V3;
@@ -18,6 +19,7 @@ import org.firstinspires.ftc.teamcode.Team15600Lib.Threads.VisionThread;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.ColorFormatter;
 
 @Autonomous
+@Disabled
 public class TestOfClockOpMode extends ClockMode_V3 {
 
     @Override

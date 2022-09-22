@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Subsystems.Chassis;
 
+import static org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.INCH;
+
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.control.PIDFController;
@@ -25,6 +27,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Chassis.Enums.DriveTrajectories
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.BrickSystem_V2;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.BrickSystem_V3;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.ColorFormatter;
+import org.firstinspires.ftc.teamcode.Team15600Lib.Util.Sensors.DistanceSensorUtil;
 
 import java.util.List;
 
@@ -39,7 +42,8 @@ public class TankDriveSubsystem extends BrickSystem_V3 {
     private final double robotRealTrackWidth = 14.5;//inch
     private final double distanceToSensor = 2;//inch
 
-    private DistanceSensor distanceSensor;
+    //private DistanceSensor distanceSensor;
+    private DistanceSensorUtil distanceSensorUtil;
 
     private PIDFController headingController = new PIDFController(SampleTankDrive.HEADING_PID);
 
@@ -56,12 +60,14 @@ public class TankDriveSubsystem extends BrickSystem_V3 {
         headingController.setInputBounds(-Math.PI, Math.PI);
         packet = new TelemetryPacket();
         fieldOverlay = packet.fieldOverlay();
-        try {
+        /*try {
         distanceSensor = hardwareMap.get(DistanceSensor.class, "RLS");
         }catch (Exception e){
             RobotLog.dd("Distance Sensor State: ", "not Found, " + e);
-        }
+        }*/
+        distanceSensorUtil = new DistanceSensorUtil(hardwareMap, "RLS", ColorFormatter.ORANGE, "Distance S");
 
+        setSubsystemSensors(distanceSensorUtil);
         setSubsystemTelemetryColor(ColorFormatter.ORANGE);
         setSubsystemState(actualState.toString());
         setName("Drive");
@@ -226,13 +232,9 @@ public class TankDriveSubsystem extends BrickSystem_V3 {
 
     public Vector2d getTargetPosition(){return targetPosition;}
 
-    public double getDetectedDistance(){
-        return distanceSensor.getDistance(DistanceUnit.INCH);
-    }
-
     public void resetRobotPosInDriversWall(){
         setActualState(DriveStates.IS_RELOCATING);
-        double distance = getDetectedDistance();
+        double distance = distanceSensorUtil.getDistance(INCH);
 
         double hypotenuse = distance + (robotRealTrackWidth / 2) + distanceToSensor;
 
@@ -252,7 +254,7 @@ public class TankDriveSubsystem extends BrickSystem_V3 {
 
     public void resetRobotPosInOppositeWall(){
         setActualState(DriveStates.IS_RELOCATING);
-        double distance = getDetectedDistance();
+        double distance = distanceSensorUtil.getDistance(INCH);
 
         double hypotenuse = distance + (robotRealTrackWidth / 2) + distanceToSensor;
 
@@ -289,12 +291,20 @@ public class TankDriveSubsystem extends BrickSystem_V3 {
         return drive.getBatteryVoltage();
     }
 
+    public static double getValueWithDeadBand(double value, double deadBand){
+        return Math.abs(value) > deadBand ? value : 0;
+    }
+
+    public void setMotorsPower(double leftMotor, double rightMotor){
+        drive.setMotorPowers(leftMotor, rightMotor);
+    }
     @Override
     public void periodic() {
         //double distance = getDetectedDistance();
         //double hypotenuse = distance + (robotRealTrackWidth / 2);
 
         setSubsystemState(getActualState().toString());
+        distanceSensorUtil.changeState();
                 //+ "\nHeading Controller Errors: " + headingController.getLastError()
                 //+ "\nDistance Sensor detected distance: " + distance
                 //+ "\nHypotenous measurement " + hypotenuse);

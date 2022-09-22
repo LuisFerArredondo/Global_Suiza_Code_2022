@@ -1,6 +1,8 @@
-package org.firstinspires.ftc.teamcode.Team15600Lib.Util;
+package org.firstinspires.ftc.teamcode.Team15600Lib.Util.Sensors;
 
-public class BrickSensor {
+import org.firstinspires.ftc.teamcode.Team15600Lib.Util.ColorFormatter;
+
+public abstract class BrickSensor {
     private String m_state = "NO_STATE";
     private ColorFormatter m_color = ColorFormatter.WHITE;
     private String m_name = this.getClass().getSimpleName();

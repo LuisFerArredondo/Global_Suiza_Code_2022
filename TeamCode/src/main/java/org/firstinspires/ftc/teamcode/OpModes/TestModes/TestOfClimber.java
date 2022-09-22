@@ -6,6 +6,7 @@ import com.arcrobotics.ftclib.command.RunCommand;
 import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -21,6 +22,7 @@ import org.firstinspires.ftc.teamcode.Team15600Lib.Threads.VisionThread;
 //3.6 : 1
 //108 : 30
 @TeleOp
+@Disabled
 public class TestOfClimber extends ClockMode_V4 {
     DcMotorEx climberM;
     Servo servo;

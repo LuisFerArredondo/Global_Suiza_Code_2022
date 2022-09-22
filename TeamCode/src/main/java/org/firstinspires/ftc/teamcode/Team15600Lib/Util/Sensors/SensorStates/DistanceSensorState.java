@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Team15600Lib.Enums;
+package org.firstinspires.ftc.teamcode.Team15600Lib.Util.Sensors.SensorStates;
 
 public enum DistanceSensorState {
     IS_OUT_OF_RANGE,

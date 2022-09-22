@@ -5,53 +5,55 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Subsystems.Toucher.Enums.ToucheMode;
 import org.firstinspires.ftc.teamcode.Subsystems.Toucher.Enums.ToucheState;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.BrickSystem_V3;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.ColorFormatter;
-import org.firstinspires.ftc.teamcode.Team15600Lib.Util.TouchSensorUtil;
+import org.firstinspires.ftc.teamcode.Team15600Lib.Util.Sensors.ColorSensorUtil;
+import org.firstinspires.ftc.teamcode.Team15600Lib.Util.Sensors.SensorStates.ColorSensorState;
 
-@Config
 public class ToucheSubsystem extends BrickSystem_V3 {
     //private final Servo leftPusher;
     //private final Servo rightPusher;
-    public static double kP_Climber = 0;
-    private DcMotorEx leftArm;
-    private DcMotorEx rightArm;
+    private Servo leftArm;
+    private Servo rightArm;
 
     private ToucheState actualState = ToucheState.IDLE;
     private ToucheMode actualMode = ToucheMode.RETRACT;
 
-    private final TouchSensorUtil leftSensor;
-    private final TouchSensorUtil rightSensor;
+    //private final TouchSensorUtil leftSensor;
+    //private final TouchSensorUtil rightSensor;
 
-    public ToucheSubsystem(HardwareMap hardwareMap){
+    private final ColorSensorUtil leftSensor;
+    private final ColorSensorUtil rightSensor;
+
+    public ToucheSubsystem(HardwareMap hardwareMap) {
         //leftPusher = hardwareMap.get(Servo.class, "SLP");
         //rightPusher = hardwareMap.get(Servo.class, "SRP");
 
         //leftPusher.setDirection(Servo.Direction.FORWARD);
         //rightPusher.setDirection(Servo.Direction.REVERSE);
-        leftArm = hardwareMap.get(DcMotorEx.class, "MLA");
-        rightArm = hardwareMap.get(DcMotorEx.class, "MRA");
+        leftArm = hardwareMap.get(Servo.class, "LS");
+        rightArm = hardwareMap.get(Servo.class, "RS");
 
-        leftArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftArm.setDirection(Servo.Direction.REVERSE);
+        rightArm.setDirection(Servo.Direction.FORWARD);
 
-        leftArm.setDirection(DcMotorSimple.Direction.FORWARD);
-        rightArm.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftSensor = new ColorSensorUtil(hardwareMap, "LCS", ColorFormatter.LIME, "Left S");
+        rightSensor = new ColorSensorUtil(hardwareMap, "RCS", ColorFormatter.LIME, "Right S");
 
-        leftArm.setPositionPIDFCoefficients(kP_Climber);
-        rightArm.setPositionPIDFCoefficients(kP_Climber);
+        leftSensor.setDistanceOffset(5);
+        rightSensor.setDistanceOffset(5);
 
-        leftSensor = new TouchSensorUtil(hardwareMap, "LTS", ColorFormatter.GREEN, "TS");
-        rightSensor = new TouchSensorUtil(hardwareMap, "RTS", ColorFormatter.GREEN, "TS");
+        setSubsystemSensors(leftSensor, rightSensor);
 
         setSubsystemState(actualState.toString());
         setSubsystemTelemetryColor(ColorFormatter.LIME);
-        setSubsystemSensors(leftSensor, rightSensor);
 
-        setName("Touche Subsystem");
+        setName("Touche_S");
     }
 
 
@@ -71,36 +73,27 @@ public class ToucheSubsystem extends BrickSystem_V3 {
         this.actualMode = actualMode;
     }
 
-    public void setLeftArmPower(double power){
-        leftArm.setPower(power);
-    }
-    public void setRightArmPower(double power){
-        rightArm.setPower(power);
+    public void setLeftArmPosition(double position){
+        leftArm.setPosition(position);
     }
 
-    public void setLeftArmTicks(int ticks){
-        leftArm.setTargetPosition(ticks);
-        leftArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    }
-    public void setRightArmTicks(int ticks){
-        leftArm.setTargetPosition(ticks);
-        leftArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    public void setRightArmPosition(double position){
+        rightArm.setPosition(position);
     }
 
-    public double getLeftCurrentPos(){
-        return leftArm.getCurrentPosition();
+    public double getLeftSensorDistance(){
+        return leftSensor.getDistance(DistanceUnit.CM);
     }
-    public double getRightCurrentPos(){
-        return rightArm.getCurrentPosition();
+    public double getRightSensorDistance(){
+        return rightSensor.getDistance(DistanceUnit.CM);
+    }
+    public boolean isLeftDetecting(){
+        return leftSensor.getSensorState().equals(ColorSensorState.OBJECT_DETECTED.toString());
+    }
+    public boolean isRightDetecting(){
+        return rightSensor.getSensorState().equals(ColorSensorState.OBJECT_DETECTED.toString());
     }
 
-    public boolean areMotorsBusy(){
-        return leftArm.isBusy() && rightArm.isBusy();
-    }
-
-    public boolean areSensorsPressed(){
-        return leftSensor.getButtonPressed() && rightSensor.getButtonPressed();
-    }
     //public void setLeftPusherPosition(double position){
     //    leftPusher.setPosition(position);
     //}
@@ -111,9 +104,12 @@ public class ToucheSubsystem extends BrickSystem_V3 {
     @Override
     public void periodic() {
 
-        setSubsystemState(getActualState().toString()
-                + "\nleftArm Ticks" + leftArm.getCurrentPosition()
-                + "\nrightArm Ticks" + rightArm.getCurrentPosition());
+        setSubsystemState(getActualState().toString());
+                //+ "left Sensor Distance: " + getLeftSensorDistance()
+                //+ "right Sensor Distance: " + getRightSensorDistance());
+                //+ "\nleftArm Ticks" + leftArm.getCurrentPosition()
+                //+ "\nrightArm Ticks" + rightArm.getCurrentPosition());
+
         leftSensor.changeState();
         rightSensor.changeState();
                 //+ "\nleft Sensor " + leftSensor.getButtonPressed()

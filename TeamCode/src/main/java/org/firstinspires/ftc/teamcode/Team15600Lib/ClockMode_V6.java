@@ -5,6 +5,7 @@ import static org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStage
 import static org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStages.INITIALIZING;
 import static org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStages.TELEOP;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -19,8 +20,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStages;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Threads.VisionThread;
-import org.firstinspires.ftc.teamcode.Team15600Lib.Util.BrickSensor;
-import org.firstinspires.ftc.teamcode.Team15600Lib.Util.BrickSystem_V2;
+import org.firstinspires.ftc.teamcode.Team15600Lib.Util.Sensors.BrickSensor;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.BrickSystem_V3;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.ColorFormatter;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.JustOnce;
@@ -31,9 +31,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-@Config
+//@Config
 public abstract class ClockMode_V6 extends LinearOpMode {
     public static boolean debuggingMode = false;
+    public static boolean print_Sensor_States = false;
+    public static boolean print_Extra_States = false;
+    public static boolean send_Field_Data = false;
+
     private final ElapsedTime matchTimer = new ElapsedTime();
     private CompetitionStages competitionStages = INITIALIZING;
 
@@ -44,6 +48,9 @@ public abstract class ClockMode_V6 extends LinearOpMode {
 
     private final List<BrickSystem_V3> m_subsystems = new ArrayList<>();
     private final HashMap<String, Object> m_extraStates = new LinkedHashMap<>();
+
+    protected TelemetryPacket packet = new TelemetryPacket();
+    protected Canvas fieldOverlay = packet.fieldOverlay();
 
     private Thread AutoThread;
     private Thread TeleOpThread;
@@ -85,9 +92,10 @@ public abstract class ClockMode_V6 extends LinearOpMode {
         m_subsystems.addAll(Arrays.asList(subsystems));
     }
 
-    public void setExtraStates(String key, Object State){
+    public void setExtraStates(String key, Object State) {
         m_extraStates.put(key, State);
     }
+
     @Override
     public void runOpMode() throws InterruptedException {
         /***************** Initializing OpMode **************************/
@@ -139,8 +147,8 @@ public abstract class ClockMode_V6 extends LinearOpMode {
         // run the scheduler
         while (!isStopRequested() && opModeIsActive()) {
 
-            TelemetryPacket packet = new TelemetryPacket();
-            Canvas fieldOverlay = packet.fieldOverlay();
+            packet = new TelemetryPacket();
+            fieldOverlay = packet.fieldOverlay();
 
             telemetry.addData("Match Stage:", competitionStages.equals(AUTONOMOUS) ?
                     ColorFormatter.GREEN.format(competitionStages.toString()) :
@@ -188,11 +196,23 @@ public abstract class ClockMode_V6 extends LinearOpMode {
                     break;
             }
 
-            sendFtcDashboardData(packet, fieldOverlay);
-            //FtcDashboard.getInstance().sendTelemetryPacket(packet);
+            if (send_Field_Data) {
+                sendFtcDashboardData(packet, fieldOverlay);
+                FtcDashboard.getInstance().sendTelemetryPacket(packet);
+            }
+
+            telemetry.addLine("Subsystems states: ");
             printSubsystemsStates();
-            printSubsystemsSensorStates();
-            printExtraStates();
+
+            if (print_Sensor_States) {
+                telemetry.addLine("Subsystems states: ");
+                printSubsystemsSensorStates();
+            }
+
+            if (print_Extra_States) {
+                telemetry.addLine("Extra States");
+                printExtraStates();
+            }
             run();
         }
         clearTelemetry();
@@ -213,11 +233,17 @@ public abstract class ClockMode_V6 extends LinearOpMode {
     }
 
     //Note: Command Scheduler is working, commands can also be used in these
+    //Note: If don't want to use commandBased framework to robot loop
+    //condition the while loop with: Thread.currentThread().isInterrupted();
     public Runnable whenAutonomous() {
         return null;
     }
 
     public Runnable whenTeleOp() {
+        return null;
+    }
+
+    public Runnable whenInitEndgame() {
         return null;
     }
 
@@ -292,8 +318,8 @@ public abstract class ClockMode_V6 extends LinearOpMode {
 
     public void printSubsystemsSensorStates() {
         for (BrickSystem_V3 subsystem : m_subsystems) {
-            for (BrickSensor sensor: subsystem.getSubsystemSensors()) {
-                telemetry.addData(subsystem.getName() + " " +sensor.getName() + " State"
+            for (BrickSensor sensor : subsystem.getSubsystemSensors()) {
+                telemetry.addData(subsystem.getName() + " " + sensor.getName() + " State"
                         , sensor.getSelectedTelemetryColor().format(sensor.getSensorState()));
             }
         }
@@ -302,6 +328,7 @@ public abstract class ClockMode_V6 extends LinearOpMode {
     public void printExtraStates() {
         for (Object extra : m_extraStates.values()) {
             telemetry.addLine(extra.toString());
+            m_extraStates.keySet();
         }
     }
 
@@ -312,5 +339,11 @@ public abstract class ClockMode_V6 extends LinearOpMode {
         }
     }
 
+    public void enablePrintExtraStates() {
+        print_Extra_States = true;
+    }
 
+    public void enablePrintSensorsStates() {
+        print_Extra_States = true;
+    }
 }

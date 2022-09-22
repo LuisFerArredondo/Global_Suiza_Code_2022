@@ -5,6 +5,7 @@ import static org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStage
 import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.firstinspires.ftc.teamcode.Subsystems.Vision.TensorFlowThreadExample;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.teamcode.Team15600Lib.ClockMode_V2;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStages;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Threads.VisionThread;
 
+@Disabled
 public class VisionTest extends ClockMode_V2 {
     TensorFlowThreadExample tensorFlowThreadExample;
 

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.OpModes.TestModes;
 import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStages;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Threads.VisionThread;
 
 @TeleOp
+@Disabled
 public class GamepadFeaturesTest extends ClockMode_V2 {
     private Gamepad.RumbleEffect endGameAnnouncer;    // Use to build a custom rumble sequence.
 

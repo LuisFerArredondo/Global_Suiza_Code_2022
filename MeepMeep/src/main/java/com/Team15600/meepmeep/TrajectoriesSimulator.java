@@ -13,11 +13,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 
 public class TrajectoriesSimulator {
     public static void main(String[] args) {
         MeepMeep meepMeep = new MeepMeep(600);
-        meepMeep.setBackground(MeepMeep.Background.GRID_GRAY)
+        meepMeep.setBackground(MeepMeep.Background.FIELD_POWERPLAY_OFFICIAL)
                 .setDarkMode(true)
                 .setBackgroundAlpha(0.95f)
 

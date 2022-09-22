@@ -6,6 +6,7 @@ import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -16,6 +17,7 @@ import org.firstinspires.ftc.teamcode.Team15600Lib.Threads.BlueThread;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Threads.VisionThread;
 
 @TeleOp
+@Disabled
 public class ThreadTestOpMode extends ClockMode_V2 {
     BlueThread we;
     ThreadState threadState = ThreadState.SLEEPING;

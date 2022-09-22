@@ -4,5 +4,6 @@ public enum CompetitionStages {
     INITIALIZING,
     AUTONOMOUS,
     TELEOP,
+    INIT_ENDGAME,
     ENDGAME
 }
