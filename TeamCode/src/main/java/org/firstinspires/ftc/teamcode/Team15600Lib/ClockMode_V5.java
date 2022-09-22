@@ -5,6 +5,8 @@ import static org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStage
 import static org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStages.INITIALIZING;
 import static org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStages.TELEOP;
 
+import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.Robot;
@@ -20,11 +22,15 @@ import org.firstinspires.ftc.teamcode.Team15600Lib.Util.BrickSystem_V2;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.ColorFormatter;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.JustOnce;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
-public abstract class ClockMode_V4 extends LinearOpMode {
+//@Config
+public abstract class ClockMode_V5 extends LinearOpMode {
+    public static boolean debuggingMode = false;
     private final ElapsedTime matchTimer = new ElapsedTime();
     private CompetitionStages competitionStages = INITIALIZING;
 
@@ -33,17 +39,18 @@ public abstract class ClockMode_V4 extends LinearOpMode {
     private static final String TELEOP_TAG = "TeleOp Thread State ";
     private static final String ENDGAME_TAG = "EndGame Thread State ";
 
-    private final List<BrickSystem_V2> m_subsystems = new LinkedList<>();
-
+    private final List<BrickSystem_V2> m_subsystems = new ArrayList<>();
+    private final HashMap<String, String> m_extraStates = new LinkedHashMap<>();
 
     private Thread AutoThread;
     private Thread TeleOpThread;
     private Thread EndgameThread;
 
     // TeleOp timings
-    public static final double NORMAL_MATCH_TIME = 90;// duration in seconds
-    public static final double GLOBAL_MATCH_TIME = 120;// duration in seconds
-    public static final double EXPOSITION_TIME = -1;// never reaching setpoint
+    protected static final double NORMAL_MATCH_TIME = 90;// duration in seconds
+    protected static final double GLOBAL_MATCH_TIME = 120;// duration in seconds
+    protected static final double EXPOSITION_TIME = -1;// never reaching setpoint
+    private double timeForTeleOp = NORMAL_MATCH_TIME;
 
     /**
      * Cancels all previous commands
@@ -51,7 +58,7 @@ public abstract class ClockMode_V4 extends LinearOpMode {
     public void reset() {
         CommandScheduler.getInstance().reset();
     }
-    
+
     /**
      * Runs the {@link CommandScheduler} instance
      */
@@ -75,6 +82,9 @@ public abstract class ClockMode_V4 extends LinearOpMode {
         m_subsystems.addAll(Arrays.asList(subsystems));
     }
 
+    public void setExtraStates(String key, String State){
+        m_extraStates.put(key, State);
+    }
     @Override
     public void runOpMode() throws InterruptedException {
         /***************** Initializing OpMode **************************/
@@ -88,8 +98,6 @@ public abstract class ClockMode_V4 extends LinearOpMode {
         RobotLog.dd(VISION_TAG, "on init");
         //telemetry.update();
 
-        double timeForTeleOp = getTeleOpTimeOut();
-
 
         JustOnce whenAutonomous = new JustOnce();
         JustOnce whenTeleOp = new JustOnce();
@@ -98,13 +106,17 @@ public abstract class ClockMode_V4 extends LinearOpMode {
         try {
             VisionThread().start();
             RobotLog.dd(VISION_TAG, " thread Successfully enabled");
+            telemetry.addData("Vision state", ColorFormatter.GREEN.format("thread enabled"));
         } catch (Exception ex) {
             telemetry.addData("Vision state", ColorFormatter.RED.format("missing thread"));
             RobotLog.dd(VISION_TAG, "Missing Thread");
         }
 
         telemetry.update();
-        initialize();
+        if (!debuggingMode)
+            initialize();
+        else
+            testMode();
 
         /***************** OpMode Started **************************/
         waitForStart();
@@ -123,8 +135,10 @@ public abstract class ClockMode_V4 extends LinearOpMode {
 
         // run the scheduler
         while (!isStopRequested() && opModeIsActive()) {
-            // if (this.getClass().isAnnotationPresent(Autonomous.class))
-            //else
+
+            TelemetryPacket packet = new TelemetryPacket();
+            Canvas fieldOverlay = packet.fieldOverlay();
+
             telemetry.addData("Match Stage:", competitionStages.equals(AUTONOMOUS) ?
                     ColorFormatter.GREEN.format(competitionStages.toString()) :
                     competitionStages.equals(TELEOP) ?
@@ -171,7 +185,10 @@ public abstract class ClockMode_V4 extends LinearOpMode {
                     break;
             }
 
+            sendFtcDashboardData(packet, fieldOverlay);
+            //FtcDashboard.getInstance().sendTelemetryPacket(packet);
             printSubsystemsStates();
+           // printExtraStates();
             run();
         }
         clearTelemetry();
@@ -187,6 +204,9 @@ public abstract class ClockMode_V4 extends LinearOpMode {
 
     //Note: Register the subsystems even do u are not using commands
     public abstract void initialize();
+
+    public void testMode() {
+    }
 
     //Note: Command Scheduler is working, commands can also be used in these
     public Runnable whenAutonomous() {
@@ -251,8 +271,8 @@ public abstract class ClockMode_V4 extends LinearOpMode {
 
     public abstract @NonNull CompetitionStages setMatchState();
 
-    public double getTeleOpTimeOut() {
-        return NORMAL_MATCH_TIME;
+    public void setChangeForEndGameTime(double time) {
+        timeForTeleOp = time;
     }
 
     public CompetitionStages getCompetitionMatchStages() {
@@ -265,4 +285,18 @@ public abstract class ClockMode_V4 extends LinearOpMode {
                     , subsystem.getSelectedTelemetryColor().format(subsystem.getSubsystemState()));
         }
     }
+    public void printExtraStates() {
+        for (String extra : m_extraStates.values()) {
+            telemetry.addLine(extra);
+        }
+    }
+
+    public void sendFtcDashboardData(TelemetryPacket packet, Canvas fieldOverlay) {
+        for (BrickSystem_V2 subsystem : m_subsystems) {
+            subsystem.sendFtcDashboardTelemetryPacket(packet);
+            subsystem.sendFtcDashboardFieldOverlay(fieldOverlay);
+        }
+    }
+
+
 }

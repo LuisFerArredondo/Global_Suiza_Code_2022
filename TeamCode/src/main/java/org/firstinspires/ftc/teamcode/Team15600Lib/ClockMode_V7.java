@@ -3,8 +3,13 @@ package org.firstinspires.ftc.teamcode.Team15600Lib;
 import static org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStages.AUTONOMOUS;
 import static org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStages.ENDGAME;
 import static org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStages.INITIALIZING;
+import static org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStages.INIT_ENDGAME;
 import static org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStages.TELEOP;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.Robot;
@@ -16,34 +21,50 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStages;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Threads.VisionThread;
-import org.firstinspires.ftc.teamcode.Team15600Lib.Util.BrickSystem_V2;
+import org.firstinspires.ftc.teamcode.Team15600Lib.Util.BrickSystem_V3;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.ColorFormatter;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.JustOnce;
+import org.firstinspires.ftc.teamcode.Team15600Lib.Util.Sensors.BrickSensor;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
-public abstract class ClockMode_V4 extends LinearOpMode {
+@Config
+public abstract class ClockMode_V7 extends LinearOpMode {
+    public static boolean debuggingMode = false;
+    public static boolean print_Sensor_States = false;
+    public static boolean print_Extra_States = false;
+    public static boolean send_Field_Data = false;
+
     private final ElapsedTime matchTimer = new ElapsedTime();
     private CompetitionStages competitionStages = INITIALIZING;
 
     private static final String VISION_TAG = "Vision Thread State ";
     private static final String AUTONOMOUS_TAG = "Autonomous Thread State ";
     private static final String TELEOP_TAG = "TeleOp Thread State ";
+    private static final String INIT_ENDGAME_TAG = "EndGame Initialization Thread State ";
     private static final String ENDGAME_TAG = "EndGame Thread State ";
 
-    private final List<BrickSystem_V2> m_subsystems = new LinkedList<>();
+    private final List<BrickSystem_V3> m_subsystems = new ArrayList<>();
+    private final HashMap<String, Object> m_extraStates = new LinkedHashMap<>();
 
+    protected TelemetryPacket packet = new TelemetryPacket();
+    protected Canvas fieldOverlay = packet.fieldOverlay();
 
     private Thread AutoThread;
     private Thread TeleOpThread;
+    private Thread EndgameInitThread;
     private Thread EndgameThread;
 
     // TeleOp timings
-    public static final double NORMAL_MATCH_TIME = 90;// duration in seconds
-    public static final double GLOBAL_MATCH_TIME = 120;// duration in seconds
-    public static final double EXPOSITION_TIME = -1;// never reaching setpoint
+    protected static final double NORMAL_MATCH_TIME = 90;// duration in seconds
+    protected static final double GLOBAL_MATCH_TIME = 120;// duration in seconds
+    protected static final double EXPOSITION_TIME = -1;// never reaching setpoint
+    private double timeForTeleOp = NORMAL_MATCH_TIME;
+    private boolean initBeforeEndgame = false;
 
     /**
      * Cancels all previous commands
@@ -51,7 +72,7 @@ public abstract class ClockMode_V4 extends LinearOpMode {
     public void reset() {
         CommandScheduler.getInstance().reset();
     }
-    
+
     /**
      * Runs the {@link CommandScheduler} instance
      */
@@ -70,9 +91,13 @@ public abstract class ClockMode_V4 extends LinearOpMode {
     /**
      * Registers {@link com.arcrobotics.ftclib.command.Subsystem} objects to the scheduler
      */
-    public void register(BrickSystem_V2... subsystems) {
+    public void register(BrickSystem_V3... subsystems) {
         CommandScheduler.getInstance().registerSubsystem(subsystems);
         m_subsystems.addAll(Arrays.asList(subsystems));
+    }
+
+    public void setExtraStates(String key, Object State) {
+        m_extraStates.put(key, State);
     }
 
     @Override
@@ -82,29 +107,34 @@ public abstract class ClockMode_V4 extends LinearOpMode {
         //   telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
-        telemetry.setCaptionValueSeparator(" ‖ ");// ⁞, …, ¶
+        telemetry.setCaptionValueSeparator("⇉");//‖, ⁞, …, ¶, ⨧, ⪜, ⪓, ⪢, ⪐, ⪑, ⫮, ⇉
         telemetry.addData("Match Stage:", competitionStages.toString());
+        telemetry.addData("Debugging Mode", debuggingMode ? "Enabled" : "Disabled");
         telemetry.addData("Vision state", ColorFormatter.YELLOW.format("initializing"));
         RobotLog.dd(VISION_TAG, "on init");
         //telemetry.update();
 
-        double timeForTeleOp = getTeleOpTimeOut();
-
+        competitionStages = setMatchState();
 
         JustOnce whenAutonomous = new JustOnce();
         JustOnce whenTeleOp = new JustOnce();
+        JustOnce whenInitEndgame = new JustOnce();
         JustOnce whenEndgame = new JustOnce();
 
         try {
             VisionThread().start();
             RobotLog.dd(VISION_TAG, " thread Successfully enabled");
+            telemetry.addData("Vision state", ColorFormatter.GREEN.format("thread enabled"));
         } catch (Exception ex) {
             telemetry.addData("Vision state", ColorFormatter.RED.format("missing thread"));
             RobotLog.dd(VISION_TAG, "Missing Thread");
         }
-
         telemetry.update();
-        initialize();
+
+        if (!debuggingMode)
+            initialize();
+        else
+            debugMode();
 
         /***************** OpMode Started **************************/
         waitForStart();
@@ -116,15 +146,16 @@ public abstract class ClockMode_V4 extends LinearOpMode {
         } catch (Exception ignored) {
         }
 
-        competitionStages = setMatchState();
         clearTelemetry();
         matchTimer.reset();
 
 
         // run the scheduler
         while (!isStopRequested() && opModeIsActive()) {
-            // if (this.getClass().isAnnotationPresent(Autonomous.class))
-            //else
+
+            packet = new TelemetryPacket();
+            fieldOverlay = packet.fieldOverlay();
+            if(debuggingMode) telemetry.addLine(ColorFormatter.LIGHT_GRAY.format("DEBUGGING MODE ACTIVATED"));
             telemetry.addData("Match Stage:", competitionStages.equals(AUTONOMOUS) ?
                     ColorFormatter.GREEN.format(competitionStages.toString()) :
                     competitionStages.equals(TELEOP) ?
@@ -154,8 +185,26 @@ public abstract class ClockMode_V4 extends LinearOpMode {
                         }
                     });
 
-                    if (matchTimer.seconds() >= timeForTeleOp
-                            && timeForTeleOp != EXPOSITION_TIME)
+                    if (matchTimer.seconds() >= timeForTeleOp && timeForTeleOp != EXPOSITION_TIME)
+                        if (initBeforeEndgame)
+                            competitionStages = INIT_ENDGAME;
+                        else competitionStages = ENDGAME;
+                    break;
+
+                case INIT_ENDGAME:
+                    whenInitEndgame.JustOneTime(true, () -> {
+                        try {
+                            EndgameInitThread = new Thread(whenInitEndgame());
+                            EndgameInitThread.start();
+                            RobotLog.dd(INIT_ENDGAME_TAG, "Successfully enabled");
+                        } catch (Exception ignored) {
+                        }
+                    });
+
+                    if (timeForTeleOp == GLOBAL_MATCH_TIME) {
+                        if (matchTimer.seconds() >= GLOBAL_MATCH_TIME)
+                            competitionStages = ENDGAME;
+                    } else if (matchTimer.seconds() >= NORMAL_MATCH_TIME)
                         competitionStages = ENDGAME;
                     break;
 
@@ -171,13 +220,25 @@ public abstract class ClockMode_V4 extends LinearOpMode {
                     break;
             }
 
+            if (send_Field_Data) {
+                sendFtcDashboardData(packet, fieldOverlay);
+                FtcDashboard.getInstance().sendTelemetryPacket(packet);
+            }
+
+            telemetry.addLine("Subsystems states: ");
             printSubsystemsStates();
+
+            if (print_Extra_States) {
+                telemetry.addLine("\nExtra States");
+                printExtraStates();
+            }
             run();
         }
         clearTelemetry();
 
         cancelAutoThread();
         cancelTeleOpThread();
+        cancelInitEndgameThread();
         cancelEndgameThread();
 
         telemetry.update();
@@ -188,12 +249,20 @@ public abstract class ClockMode_V4 extends LinearOpMode {
     //Note: Register the subsystems even do u are not using commands
     public abstract void initialize();
 
+    public void debugMode(){}
+
     //Note: Command Scheduler is working, commands can also be used in these
+    //Note: If don't want to use commandBased framework to robot loop
+    //condition the while loop with: Thread.currentThread().isInterrupted();
     public Runnable whenAutonomous() {
         return null;
     }
 
     public Runnable whenTeleOp() {
+        return null;
+    }
+
+    public Runnable whenInitEndgame() {
         return null;
     }
 
@@ -215,6 +284,15 @@ public abstract class ClockMode_V4 extends LinearOpMode {
             try {
                 TeleOpThread.interrupt();
                 RobotLog.dd(TELEOP_TAG, "successfully finished");
+            } catch (Exception ignored) {
+            }
+    }
+
+    public void cancelInitEndgameThread() {
+        if (EndgameInitThread != null)
+            try {
+                EndgameInitThread.interrupt();
+                RobotLog.dd(ENDGAME_TAG, "successfully finished");
             } catch (Exception ignored) {
             }
     }
@@ -251,8 +329,12 @@ public abstract class ClockMode_V4 extends LinearOpMode {
 
     public abstract @NonNull CompetitionStages setMatchState();
 
-    public double getTeleOpTimeOut() {
-        return NORMAL_MATCH_TIME;
+    public void setChangeForEndGameTime(double time) {
+        timeForTeleOp = time;
+    }
+
+    public void enableInitBeforeEndgame() {
+        initBeforeEndgame = true;
     }
 
     public CompetitionStages getCompetitionMatchStages() {
@@ -260,9 +342,41 @@ public abstract class ClockMode_V4 extends LinearOpMode {
     }
 
     public void printSubsystemsStates() {
-        for (BrickSystem_V2 subsystem : m_subsystems) {
+        for (BrickSystem_V3 subsystem : m_subsystems) {
             telemetry.addData(subsystem.getName() + " State"
                     , subsystem.getSelectedTelemetryColor().format(subsystem.getSubsystemState()));
+
+            if (print_Sensor_States) {
+                for (BrickSensor sensor : subsystem.getSubsystemSensors()) {
+                    telemetry.addData(sensor.getName() + " State"
+                            , sensor.getSelectedTelemetryColor().format(sensor.getSensorState()));
+                }
+            }
+            //telemetry.addLine("");
         }
     }
+
+    public void printExtraStates() {
+        for (Object extra : m_extraStates.values()) {
+            telemetry.addLine(extra.toString());
+            m_extraStates.keySet();
+        }
+    }
+
+    public void sendFtcDashboardData(TelemetryPacket packet, Canvas fieldOverlay) {
+        for (BrickSystem_V3 subsystem : m_subsystems) {
+            subsystem.sendFtcDashboardTelemetryPacket(packet);
+            subsystem.sendFtcDashboardFieldOverlay(fieldOverlay);
+        }
+    }
+
+    public void enablePrintExtraStates() {
+        print_Extra_States = true;
+    }
+
+    public void enablePrintSensorsStates() {
+        print_Sensor_States = true;
+    }
+
+    public void enableDebuggingMode(){debuggingMode = true;}
 }

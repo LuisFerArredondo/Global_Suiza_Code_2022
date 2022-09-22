@@ -1,5 +1,11 @@
 package org.firstinspires.ftc.teamcode.Team15600Lib.Util;
 
+/*
+*
+* Property of "The Technototes FTC Teams 16750 and 20403"
+ *
+* */
+
 public enum ColorFormatter {
     RED("FF2222"), ORANGE("EA5D00"), YELLOW("FFBF00"), LIME("69FF00"),
     GREEN("00FF1D"), CYAN("00FFFF"), BLUE("172EAE"), PURPLE("822EFF"),
