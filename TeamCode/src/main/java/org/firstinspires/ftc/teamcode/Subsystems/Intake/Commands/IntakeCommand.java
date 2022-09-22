@@ -42,6 +42,7 @@ public class IntakeCommand extends CommandBase {
                     intakeSubsystem.setActualMode(IntakeMode.OFF);
                     break;
                 }
+
                 if(intakeSubsystem.getMotorCurrent() > 7.6 ){
                     isFilled = true;
                 }
