@@ -14,7 +14,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStages;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Threads.VisionThread;
-import org.firstinspires.ftc.teamcode.Team15600Lib.Util.BrickSystem;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.ColorFormatter;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.JustOnce;
 
@@ -59,7 +58,7 @@ public abstract class ClockMode_V3 extends LinearOpMode {
     }
 
     /**
-     * Registers {@link com.arcrobotics.ftclib.command.Subsystem} objects to the scheduler
+     * Registers {@link Subsystem} objects to the scheduler
      */
     public void register(Subsystem... subsystems) {
         CommandScheduler.getInstance().registerSubsystem(subsystems);
