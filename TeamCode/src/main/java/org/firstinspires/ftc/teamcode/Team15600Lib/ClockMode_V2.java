@@ -105,7 +105,7 @@ public abstract class ClockMode_V2 extends LinearOpMode {
                         try {
                             AutoThread = new Thread(whenAutonomous());
                             AutoThread.start();
-                            //telemetry.addLine("Auto thread Succsefully eneabled");
+                            telemetry.addLine("Auto thread Succsefully eneabled");
                         } catch (Exception ignored) {
                         }
                     });

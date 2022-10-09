@@ -17,13 +17,14 @@ public class LinearSystemSubsystem extends BrickSystem_V3 {
     private LinearSystemStates actualState = LinearSystemStates.IDLE;
 
     public LinearSystemSubsystem(HardwareMap hardwareMap) {
-        linearSystem = hardwareMap.get(DcMotorEx.class, "CM");
+        linearSystem = hardwareMap.get(DcMotorEx.class, "LSM");
         linearSystem.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         linearSystem.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         linearSystem.setDirection(DcMotorSimple.Direction.FORWARD);
-        linearSystem.setTargetPositionTolerance(100);
+        linearSystem.setTargetPositionTolerance(60);
         linearSystem.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        linearSystem.setPositionPIDFCoefficients(4);
         setSubsystemTelemetryColor(ColorFormatter.CYAN);
         setName("LinearSystem Subsystem");
         setSubsystemState(actualState.toString());
@@ -70,8 +71,8 @@ public class LinearSystemSubsystem extends BrickSystem_V3 {
 
     @Override
     public void periodic() {
-        setSubsystemState(actualState.toString()
-                + "\nIs Motor Busy: " + isMotorBusy());
-        //+ "linearSystem Ticks: " + getLinearSystemMotorTicks());
+        setSubsystemState(actualState.toString());
+                //+ "\nIs Motor Busy: " + isMotorBusy()
+                //+ "\nlinearSystem Ticks: " + getLinearSystemMotorTicks());
     }
 }

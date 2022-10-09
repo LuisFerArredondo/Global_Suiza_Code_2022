@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 
 @Config
 public abstract class ClockMode_V7 extends LinearOpMode {
@@ -107,8 +108,8 @@ public abstract class ClockMode_V7 extends LinearOpMode {
         //   telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
-        telemetry.setCaptionValueSeparator("⇉");//‖, ⁞, …, ¶, ⨧, ⪜, ⪓, ⪢, ⪐, ⪑, ⫮, ⇉
-        telemetry.addData("Match Stage:", competitionStages.toString());
+        telemetry.setCaptionValueSeparator("⇉");//‖, ⁞, …, ¶, ⨧, ⪜, ⪓, ⪢, ⪐, ⪑, ⫮, ⇉, ⇏⇒⇨⇛►▶▷
+        telemetry.addLine("Match Stage: " + competitionStages.toString());
         telemetry.addData("Debugging Mode", debuggingMode ? "Enabled" : "Disabled");
         telemetry.addData("Vision state", ColorFormatter.YELLOW.format("initializing"));
         RobotLog.dd(VISION_TAG, "on init");
@@ -327,7 +328,8 @@ public abstract class ClockMode_V7 extends LinearOpMode {
         telemetry.update();
     }
 
-    public abstract @NonNull CompetitionStages setMatchState();
+    @NonNull
+    public abstract  CompetitionStages setMatchState();
 
     public void setChangeForEndGameTime(double time) {
         timeForTeleOp = time;
@@ -348,7 +350,7 @@ public abstract class ClockMode_V7 extends LinearOpMode {
 
             if (print_Sensor_States) {
                 for (BrickSensor sensor : subsystem.getSubsystemSensors()) {
-                    telemetry.addData(sensor.getName() + " State"
+                    telemetry.addData(" ● " + sensor.getName() + " State"
                             , sensor.getSelectedTelemetryColor().format(sensor.getSensorState()));
                 }
             }
@@ -359,8 +361,8 @@ public abstract class ClockMode_V7 extends LinearOpMode {
     public void printExtraStates() {
         for (Object extra : m_extraStates.values()) {
             telemetry.addLine(extra.toString());
-            m_extraStates.keySet();
         }
+        m_extraStates.clear();
     }
 
     public void sendFtcDashboardData(TelemetryPacket packet, Canvas fieldOverlay) {
@@ -379,4 +381,5 @@ public abstract class ClockMode_V7 extends LinearOpMode {
     }
 
     public void enableDebuggingMode(){debuggingMode = true;}
+    public void disableDebuggingMode(){debuggingMode = false;}
 }

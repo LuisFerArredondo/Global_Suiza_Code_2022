@@ -18,7 +18,7 @@ import javax.imageio.ImageReader;
 public class TrajectoriesSimulator {
     public static void main(String[] args) {
         MeepMeep meepMeep = new MeepMeep(600);
-        meepMeep.setBackground(MeepMeep.Background.FIELD_POWERPLAY_OFFICIAL)
+        meepMeep.setBackground(MeepMeep.Background.GRID_GRAY)
                 .setDarkMode(true)
                 .setBackgroundAlpha(0.95f)
 

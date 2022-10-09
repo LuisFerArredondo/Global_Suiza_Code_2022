@@ -42,8 +42,8 @@ public class ToucheSubsystem extends BrickSystem_V3 {
         leftArm.setDirection(Servo.Direction.REVERSE);
         rightArm.setDirection(Servo.Direction.FORWARD);
 
-        leftSensor = new ColorSensorUtil(hardwareMap, "LCS", ColorFormatter.LIME, "Left S");
-        rightSensor = new ColorSensorUtil(hardwareMap, "RCS", ColorFormatter.LIME, "Right S");
+        leftSensor = new ColorSensorUtil(hardwareMap, "LCS", ColorFormatter.LIME, "Left_S");
+        rightSensor = new ColorSensorUtil(hardwareMap, "RCS", ColorFormatter.LIME, "Right_S");
 
         leftSensor.setDistanceOffset(5);
         rightSensor.setDistanceOffset(5);

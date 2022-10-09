@@ -248,7 +248,27 @@ public class TankDriveSubsystem extends BrickSystem_V3 {
         double FinalY = 137.795 - Math.abs(getY);
         double FinalX = 118.11 - getX;
         //            137.8 -
-        setPoseEstimate(new Pose2d(-FinalX, FinalY, getPoseEstimate().getHeading()));
+        setPoseEstimate(new Pose2d(-FinalX, FinalY, getPoseEstimate().getHeading() + Math.toRadians(180)));
+        //setActualState(DriveStates.IS_RELOCATED);
+    }
+
+    public void resetRobotPosFelixSolution(){
+        setActualState(DriveStates.IS_RELOCATING);
+        double distance = distanceSensorUtil.getDistance(INCH);
+
+        double hypotenuse = distance + (robotRealTrackWidth / 2) + distanceToSensor;
+
+        double RTheta = Math.IEEEremainder(Math.toDegrees(getPoseEstimate().getHeading()), 360);
+        double RAlpha = RTheta + 90;
+        //por alguna razon me lo da en grados la puta
+
+        double getY = (hypotenuse * (Math.cos(Math.toRadians(RAlpha))));
+        double getX = getY - (Math.sqrt(2) * 20);
+
+        double FinalY = 137.795 - Math.abs(getY);
+        double FinalX = 91 - getX;
+        //            137.8 -
+        setPoseEstimate(new Pose2d(-FinalX, FinalY, getPoseEstimate().getHeading() + Math.toRadians(180)));
         //setActualState(DriveStates.IS_RELOCATED);
     }
 
@@ -269,7 +289,7 @@ public class TankDriveSubsystem extends BrickSystem_V3 {
         double FinalX = 118.11 - Math.abs(getX);
         //            137.8 -
 
-        setPoseEstimate(new Pose2d(-FinalX, FinalY, getPoseEstimate().getHeading() + Math.toRadians(180)));
+        setPoseEstimate(new Pose2d(-FinalX, FinalY, getPoseEstimate().getHeading()));// + Math.toRadians(180)));
         //setActualState(DriveStates.IS_RELOCATED);
     }
 
@@ -298,6 +318,7 @@ public class TankDriveSubsystem extends BrickSystem_V3 {
     public void setMotorsPower(double leftMotor, double rightMotor){
         drive.setMotorPowers(leftMotor, rightMotor);
     }
+
     @Override
     public void periodic() {
         //double distance = getDetectedDistance();

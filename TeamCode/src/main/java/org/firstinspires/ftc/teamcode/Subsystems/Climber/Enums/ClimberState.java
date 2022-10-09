@@ -10,5 +10,6 @@ public enum ClimberState {
     DEPOSING_HOOK,
     RESETTING_POSITIONS,
     IN_POSSIBLE_CRASHING,
+    SAFE_CLIMB,
     CLIMBER_LOCKED
 }

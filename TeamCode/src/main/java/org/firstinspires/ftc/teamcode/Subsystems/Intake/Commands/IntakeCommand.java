@@ -37,20 +37,22 @@ public class IntakeCommand extends CommandBase {
                 intakeSubsystem.setIntakePower(0);
                 //intakeSubsystem.setBlenderPower(0);
                 break;
-            case INTAKE:
-                if (isFilled) {
-                    intakeSubsystem.setActualMode(IntakeMode.OFF);
-                    break;
-                }
 
-                if(intakeSubsystem.getMotorCurrent() > 7.6 ){
-                    isFilled = true;
-                }
+            case INTAKE:
+                //if (isFilled) {
+                //    intakeSubsystem.setActualMode(IntakeMode.OFF);
+                //    break;
+                //}
+
+                //if(intakeSubsystem.getMotorCurrent() > 7 ){//7.6
+                //    isFilled = true;
+                //}
 
                 intakeSubsystem.setActualState(IntakeState.IS_PICKING);
                 intakeSubsystem.setIntakePower(1);
                 //intakeSubsystem.setBlenderPower(1);
                 break;
+
             case REJECT:
                 intakeSubsystem.setActualState(IntakeState.IS_REJECTING_AND_BLENDING);
                 intakeSubsystem.setIntakePower(-1);
@@ -60,7 +62,7 @@ public class IntakeCommand extends CommandBase {
         }
 
         packet.put("intake Motor current", intakeSubsystem.getMotorCurrent());
-        FtcDashboard.getInstance().sendTelemetryPacket(packet);
+        //FtcDashboard.getInstance().sendTelemetryPacket(packet);
     }
 
     @Override

@@ -5,6 +5,7 @@ import static org.firstinspires.ftc.teamcode.Subsystems.Chassis.TankDriveSubsyst
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.arcrobotics.ftclib.command.CommandBase;
@@ -23,18 +24,21 @@ import org.firstinspires.ftc.teamcode.Team15600Lib.Util.JustOnce;
 
 import java.util.function.DoubleSupplier;
 
+@Config
 public class TankDriveCommand extends CommandBase {
-
     private final TankDriveSubsystem drive;
     private ToucheSubsystem toucheSubsystem;
     private LinearSystemSubsystem linearSystemSubsystem;
+    public static boolean show_data_2_dash = false;
 
     private final DoubleSupplier leftY;
     private final DoubleSupplier rightX;
     private double deadBand = 0;
     private JustOnce trajectoryJustOnce;
+    private boolean trajectoryEnabled = false;
+    private boolean isAligned = false;
 
-    private TrajectorySequence traj;
+    private TrajectorySequence trajectory;
 
     public TankDriveCommand(TankDriveSubsystem drive, DoubleSupplier leftY, DoubleSupplier rightX) {
         this.drive = drive;
@@ -71,64 +75,77 @@ public class TankDriveCommand extends CommandBase {
                 drive.setActualTrajectoryMode(DriveTrajectories.NON_AUTO);
                 drive.drive(getValueWithDeadBand(leftY.getAsDouble(), 0.15), 0, rightX.getAsDouble());
                 drive.setActualState(DriveStates.MANUAL_DRIVE);
+                isAligned = false;
                 break;
 
             case AUTONOMOUS_DRIVE:
                 switch (drive.getActualTrajectory()) {
                     case SELF_POSITIONING_HUMAN_PLAYER:
-                        traj = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                        trajectory = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                                 .back(40)
                                 .setReversed(false)
                                 .splineTo(new Vector2d(-96, 119), drive.getPoseEstimate().getHeading())
                                 //.back(70)
                                 //.forward(70)
                                 .build();
-
-                        trajectoryJustOnce.JustOneTime(true, new TrajectoryFollowerCommand(drive, traj, true)::schedule);
+                        trajectoryEnabled = true;
+                        //trajectoryJustOnce.JustOneTime(true, new TrajectoryFollowerCommand(drive, traj, true)::schedule);
                         break;
 
                     case SELF_POSITIONING_CLIMBING:
-                        traj = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                        trajectory = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                                 .setReversed(false)
-                                .splineTo(new Vector2d(-1, 53), Math.toRadians(0))
+                                .splineTo(new Vector2d(-22, 54), Math.toRadians(-45))
+                                .turn(Math.toRadians(95)) //-24, 57
+                                //.splineTo(new Vector2d(-10, 59), Math.toRadians(0))
                                 //.back(70)
                                 //.forward(70)
                                 .build();
 
-                        trajectoryJustOnce.JustOneTime(true, new TrajectoryFollowerCommand(drive, traj, true)::schedule);
+                        trajectoryEnabled = true;
 
-                        if (!drive.isBusy()) {
-                            drive.setActualTrajectoryMode(DriveTrajectories.ADVANCING_TO_SINK);
-                        }
+                        //trajectoryJustOnce.JustOneTime(true, new TrajectoryFollowerCommand(drive, traj, true)::schedule);
+
+                        //if (!drive.isBusy()) {
+                        //    drive.setActualTrajectoryMode(DriveTrajectories.ADVANCING_TO_SINK);
+                        //}
                         break;
 
                     case ADVANCING_TO_SINK:
                         //if (toucheSubsystem.getActualState().equals(ToucheState.IS_POSITIONED_TO_CRASH))
-                        if (toucheSubsystem.getActualState().equals(ToucheState.IS_ROBOT_POSITIONED)){
-                            drive.setActualTrajectoryMode(DriveTrajectories.PREPARING_TO_CLIMB);
+                        if (toucheSubsystem.getActualState().equals(ToucheState.IS_ROBOT_POSITIONED)) {
+                            drive.setActualState(DriveStates.IS_ALIGNED);
+                            isAligned = true;
+                            //drive.setMotorsPower(0, 0);
                             break;
                         }
+                        if (!isAligned) {
+                            drive.setActualState(DriveStates.IS_AUTO_ALIGNING);
                             drive.setMotorsPower(
-                                    toucheSubsystem.isLeftDetecting() ? 0 : -0.2
-                                    , toucheSubsystem.isRightDetecting()? 0 : -0.2
+                                    toucheSubsystem.isLeftDetecting() ? 0 : 0.2,
+                                    toucheSubsystem.isRightDetecting() ? 0 : 0.2
                             );
+                        }
+                        trajectoryEnabled = false;
                         break;
 
                     case PREPARING_TO_CLIMB:
-                        linearSystemSubsystem.setActualMode(LinearSystemModes.AUTOMATIC_ARM_UP);
-                        drive.setActualMode(DriveModes.MANUAL_DRIVE);
-                        //if (!linearSystemSubsystem.isMotorBusy())
-                        //drive.setActualTrajectoryMode(DriveTrajectories.HOOK_DEPOSED_AND_CLIMBING);
+                        trajectory = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                                .setReversed(false)
+                                //.splineTo(new Vector2d(-10, 59), Math.toRadians(0))
+                                //.back(70)
+                                .forward(9)
+                                .build();
+
+                        trajectoryEnabled = true;
                         break;
 
-                    case HOOK_DEPOSED_AND_CLIMBING:
-                        linearSystemSubsystem.setActualMode(LinearSystemModes.AUTOMATIC_RETRACTION);
-
-                        break;
                     case NON_AUTO:
-
+                        trajectoryEnabled = true;
                         break;
                 }
+                if (trajectory != null && trajectoryEnabled)
+                    trajectoryJustOnce.JustOneTime(true, new TrajectoryFollowerCommand(drive, trajectory, true)::schedule);
                 break;
 
             case AUTO_ALIGN_DRIVE:
@@ -147,13 +164,19 @@ public class TankDriveCommand extends CommandBase {
                 drive.autoAlignDrive(leftY.getAsDouble(), 0, rightX.getAsDouble());
                 break;
 
-            case CANCEL_DRIVE:
+            case CANCEL_AUTONOMOUS_DRIVE:
+                drive.setActualState(DriveStates.FINISHED_TRAJECTORIES);
                 drive.breakTrajectoryFollowing();
+
+                // if(!drive.isBusy())
                 drive.setActualMode(DriveModes.MANUAL_DRIVE);
                 break;
 
             case RELOCATE_DRIVE_DRIVERS_WALL:
-                drive.resetRobotPosInDriversWall();
+                //drive.resetRobotPosInDriversWall();
+                drive.resetRobotPosFelixSolution();
+                //drive.setActualTrajectoryMode(DriveTrajectories.SELF_POSITIONING_CLIMBING);
+                //drive.setActualMode(DriveModes.AUTONOMOUS_DRIVE);
                 drive.setActualMode(DriveModes.MANUAL_DRIVE);
                 break;
 
@@ -175,11 +198,13 @@ public class TankDriveCommand extends CommandBase {
             packet.put("Drive heading", Math.IEEEremainder(Math.toDegrees(drive.getPoseEstimate().getHeading()), 360));
             packet.put("Battery Voltage", drive.getBatteryVoltage());
 
-            //FtcDashboard.getInstance().sendTelemetryPacket(packet);
+            if (show_data_2_dash)
+                FtcDashboard.getInstance().sendTelemetryPacket(packet);
             drive.getLocalizer().update();
             trajectoryJustOnce.resetFlagToFalse();
             //autonomousNeedAlign = false;
         }
+        //trajectoryJustOnce.JustOneTime(true, new TrajectoryFollowerCommand(drive, traj, true)::schedule);
     }
 }
 

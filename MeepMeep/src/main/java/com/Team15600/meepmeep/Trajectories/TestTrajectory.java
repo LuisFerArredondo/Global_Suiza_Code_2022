@@ -17,16 +17,11 @@ public class TestTrajectory {
                 .setDimensions(12,13)
                 .setDriveTrainType(DriveTrainType.TANK)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(20, 30, Math.toRadians(180)))
-                                .setReversed(drive.getPoseEstimate().getHeading() >= 0 && drive.getPoseEstimate().getHeading() <= 225)
-                                .splineTo(new Vector2d(0,-46),Math.toRadians(-90))
-
+                        drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(90)))
+                                //.setReversed(drive.getPoseEstimate().getHeading() >= 0 && drive.getPoseEstimate().getHeading() <= 225)
+                                //.splineTo(new Vector2d(0,-46),Math.toRadians(-90))
+                                .forward(1)
                                 .build()
                 );
-    }
-
-    public boolean getRobotReverseDirection(Pose2d robotPose){
-       // if()
-        return false;
     }
 }

@@ -1,8 +1,9 @@
-package org.firstinspires.ftc.teamcode.OpModes.TeleOp;
+package org.firstinspires.ftc.teamcode.OpModes.TestModes;
 
 import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.TouchSensor;
@@ -24,6 +25,7 @@ import org.firstinspires.ftc.teamcode.Team15600Lib.Threads.VisionThread;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.BrickSystem_V2;
 
 @TeleOp
+@Disabled
 public class ToucheTeleOp extends ClockMode_V7 {
     SampleTankDrive sampleTankDrive;
     TankDriveSubsystem tankDriveSubsystem;

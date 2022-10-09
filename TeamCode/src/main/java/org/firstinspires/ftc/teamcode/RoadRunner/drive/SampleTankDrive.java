@@ -1,17 +1,5 @@
 package org.firstinspires.ftc.teamcode.RoadRunner.drive;
 
-import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.MAX_ACCEL;
-import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.MAX_ANG_ACCEL;
-import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.MAX_ANG_VEL;
-import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.MAX_VEL;
-import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.MOTOR_VELO_PID;
-import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.RUN_USING_ENCODER;
-import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.TRACK_WIDTH;
-import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.encoderTicksToInches;
-import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.kA;
-import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.kStatic;
-import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.kV;
-
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -48,13 +36,25 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.MAX_ACCEL;
+import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.MAX_ANG_ACCEL;
+import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.MAX_ANG_VEL;
+import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.MAX_VEL;
+import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.MOTOR_VELO_PID;
+import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.RUN_USING_ENCODER;
+import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.TRACK_WIDTH;
+import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.encoderTicksToInches;
+import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.kA;
+import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.kStatic;
+import static org.firstinspires.ftc.teamcode.RoadRunner.drive.DriveConstants.kV;
+
 /*
  * Simple tank drive hardware implementation for REV hardware.
  */
 @Config
 public class SampleTankDrive extends TankDrive {
     public static PIDCoefficients AXIAL_PID = new PIDCoefficients(0.5, 0, 0);
-    public static PIDCoefficients CROSS_TRACK_PID = new PIDCoefficients(0.5,0,0);
+    public static PIDCoefficients CROSS_TRACK_PID = new PIDCoefficients(0.5, 0, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(1, 0, 0);
 
     public static double VX_WEIGHT = 1;
@@ -141,7 +141,6 @@ public class SampleTankDrive extends TankDrive {
         // TODO: reverse any motors using DcMotor.setDirection()
         leftFront.setDirection(DcMotorSimple.Direction.FORWARD);
         rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-
         // TODO: if desired, use setLocalizer() to change the localization method
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
 
@@ -202,18 +201,17 @@ public class SampleTankDrive extends TankDrive {
         followTrajectorySequenceAsync(trajectorySequence);
         waitForIdle();
     }
-    public void breakFollowing() {
-        trajectorySequenceRunner.breakFollowing();
-    }
 
     public Pose2d getLastError() {
         return trajectorySequenceRunner.getLastPoseError();
     }
 
+    public void breakFollowing() {
+        trajectorySequenceRunner.breakFollowing();
+    }
 
     public void update() {
         updatePoseEstimate();
-
         DriveSignal signal = trajectorySequenceRunner.update(getPoseEstimate(), getPoseVelocity());
         if (signal != null) setDriveSignal(signal);
     }
@@ -292,13 +290,17 @@ public class SampleTankDrive extends TankDrive {
     }
 
     @Override
-    public void setMotorPowers(double left, double right) {
+    public void setMotorPowers(double v, double v1) {
         for (DcMotorEx leftMotor : leftMotors) {
-            leftMotor.setPower(left);
+            leftMotor.setPower(v);
         }
         for (DcMotorEx rightMotor : rightMotors) {
-            rightMotor.setPower(right);
+            rightMotor.setPower(v1);
         }
+    }
+
+    public double getBatteryVoltage(){
+        return batteryVoltageSensor.getVoltage();
     }
 
     @Override
@@ -308,7 +310,7 @@ public class SampleTankDrive extends TankDrive {
 
     @Override
     public Double getExternalHeadingVelocity() {
-        return (double) imu.getAngularVelocity().zRotationRate;
+        return (double) imu.getAngularVelocity().zRotationRate;// + 180;// no sumes
     }
 
     public static TrajectoryVelocityConstraint getVelocityConstraint(double maxVel, double maxAngularVel, double trackWidth) {
@@ -321,8 +323,13 @@ public class SampleTankDrive extends TankDrive {
     public static TrajectoryAccelerationConstraint getAccelerationConstraint(double maxAccel) {
         return new ProfileAccelerationConstraint(maxAccel);
     }
-
-    public double getBatteryVoltage(){
-        return batteryVoltageSensor.getVoltage();
-    }
 }
+/*
+* public static PIDCoefficients AXIAL_PID = new PIDCoefficients(0.5, 0, 0);
+    public static PIDCoefficients CROSS_TRACK_PID = new PIDCoefficients(0.5,0,0);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(1, 0, 0);
+
+    public void breakFollowing() {
+        trajectorySequenceRunner.breakFollowing();
+    }
+*/

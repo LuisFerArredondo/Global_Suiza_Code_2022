@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.hardware.ServoControllerEx;
+import com.qualcomm.robotcore.hardware.configuration.ServoFlavor;
 
 import org.firstinspires.ftc.teamcode.Subsystems.ClimberLock.Enums.LockMode;
 import org.firstinspires.ftc.teamcode.Subsystems.ClimberLock.Enums.LockStates;
@@ -19,9 +20,9 @@ public class ClimberLockSubsystem extends BrickSystem_V3 {
 
 
     public ClimberLockSubsystem(HardwareMap hardwareMap){
-        lock = hardwareMap.get(Servo.class, "SL");
+        lock = hardwareMap.get(Servo.class, "CLS");
 
-        lock.setDirection(Servo.Direction.REVERSE);
+        lock.setDirection(Servo.Direction.FORWARD);
         //controllerEx = hardwareMap.get(ServoControllerEx.class, "SL");
         //controllerEx = lock.getController();
 

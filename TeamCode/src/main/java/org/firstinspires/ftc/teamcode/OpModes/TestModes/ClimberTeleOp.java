@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.OpModes.TeleOp;
+package org.firstinspires.ftc.teamcode.OpModes.TestModes;
 
 import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
@@ -27,6 +27,8 @@ import org.firstinspires.ftc.teamcode.Team15600Lib.Enums.CompetitionStages;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Threads.VisionThread;
 
 @TeleOp
+@Disabled
+
 public class ClimberTeleOp extends ClockMode_V7 {
     SampleTankDrive sampleTankDrive;
     TankDriveSubsystem tankDriveSubsystem;

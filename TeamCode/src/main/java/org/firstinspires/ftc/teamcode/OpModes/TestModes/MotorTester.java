@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.Team15600Lib.Threads.VisionThread;
 @Config
 @Autonomous
 public class MotorTester extends ClockMode_V7 {
-    public static int TargetTicks = 0;
+    public static int TargetTicks = 700;
     private DcMotorEx motorToTest;
 
     @Override

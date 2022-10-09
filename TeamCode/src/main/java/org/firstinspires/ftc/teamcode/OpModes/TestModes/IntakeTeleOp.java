@@ -1,8 +1,9 @@
-package org.firstinspires.ftc.teamcode.OpModes.TeleOp;
+package org.firstinspires.ftc.teamcode.OpModes.TestModes;
 
 import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -21,6 +22,7 @@ import org.firstinspires.ftc.teamcode.Team15600Lib.Threads.VisionThread;
 import org.firstinspires.ftc.teamcode.Team15600Lib.Util.BrickSystem_V2;
 
 @TeleOp
+@Disabled
 public class IntakeTeleOp extends ClockMode_V6 {
     SampleTankDrive sampleTankDrive;
     TankDriveSubsystem tankDriveSubsystem;
@@ -39,7 +41,7 @@ public class IntakeTeleOp extends ClockMode_V6 {
 
         register(tankDriveSubsystem, intakeSubsystem);
 
-        tankDriveSubsystem.setDefaultCommand(new TankDriveCommand(tankDriveSubsystem, () -> gamepadEx1.getLeftY(), gamepadEx1::getRightX));
+        tankDriveSubsystem.setDefaultCommand(new TankDriveCommand(tankDriveSubsystem, () -> -gamepadEx1.getLeftY(), gamepadEx1::getRightX));
         intakeSubsystem.setDefaultCommand(new IntakeCommand(intakeSubsystem));
 
         new GamepadButton(gamepadEx1, GamepadKeys.Button.RIGHT_BUMPER)
