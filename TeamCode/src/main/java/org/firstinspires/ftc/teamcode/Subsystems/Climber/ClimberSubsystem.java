@@ -29,7 +29,7 @@ public class ClimberSubsystem extends BrickSystem_V3 {
         internalClimber.setMode(RunMode.RUN_WITHOUT_ENCODER);
         externalClimber.setMode(RunMode.RUN_WITHOUT_ENCODER);
 
-        internalClimber.setDirection(DcMotorSimple.Direction.FORWARD);
+        internalClimber.setDirection(DcMotorSimple.Direction.REVERSE);
         externalClimber.setDirection(DcMotorSimple.Direction.FORWARD);
 
         internalClimber.setTargetPositionTolerance(100);

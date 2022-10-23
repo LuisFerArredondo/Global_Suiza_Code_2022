@@ -251,7 +251,7 @@ public class RobotState {
                     ManualLift().initialize();
                 } else {
                     //compressorTrajectory().schedule();
-                    automaticClimbingSequence().schedule();
+                    //automaticClimbingSequence().schedule();
                 }
             }
 
@@ -276,6 +276,7 @@ public class RobotState {
                     ManualRetract().initialize();
                 } else {
                     automaticClimb().schedule();
+                    //automaticClimbDistanceTuner().schedule();
                 }
             }
 
@@ -460,6 +461,23 @@ public class RobotState {
 
                 new DeadLineStateCommand(climberLockSubsystem, LockStates.IS_CLOSED.toString(),
                         () -> setClimberLockMode(LockMode.CLOSE))
+        );
+    }
+    public SequentialCommandGroup automaticClimbDistanceTuner() {
+        return new SequentialCommandGroup(
+                new DeadLineStateCommand(toucheSubsystem, ToucheState.RETRACTED.toString(),
+                        () -> setToucheMode(ToucheMode.RETRACT)),
+
+                new DeadLineStateCommand(tankDriveSubsystem, DriveStates.FINISHED_TRAJECTORIES.toString(),
+                        () -> {
+                            setDriveTrajectoryMode(DriveTrajectories.PREPARING_TO_CLIMB);
+                            setDriveMode(DriveModes.AUTONOMOUS_DRIVE);
+                        }),
+
+                new DeadLineStateCommand(linearSystemSubsystem, LinearSystemStates.IS_RETRACTED.toString(),
+                        () -> setLinearMode(LinearSystemModes.AUTOMATIC_RETRACTION))
+
+                //new InstantCommand(()-> setLinearMode(LinearSystemModes.AUTOMATIC_RETRACTION)),
         );
     }
 

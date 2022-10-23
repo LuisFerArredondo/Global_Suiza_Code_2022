@@ -11,6 +11,8 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.firstinspires.ftc.teamcode.RoadRunner.drive.SampleTankDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.Chassis.Commands.TankDriveCommand;
+import org.firstinspires.ftc.teamcode.Subsystems.Chassis.Enums.DriveModes;
+import org.firstinspires.ftc.teamcode.Subsystems.Chassis.Enums.DriveTrajectories;
 import org.firstinspires.ftc.teamcode.Subsystems.Chassis.TankDriveSubsystem;
 import org.firstinspires.ftc.teamcode.Subsystems.Climber.ClimberSubsystem;
 import org.firstinspires.ftc.teamcode.Subsystems.Climber.Commands.PoweredClimberCommand;
@@ -73,7 +75,7 @@ public class El_Profeta_TeleOp extends ClockMode_V7 {
         gamepad1.setLedColor(128, 0, 255, Gamepad.LED_DURATION_CONTINUOUS);
         robotState.ChangeLedColor2MexicanFlag(gamepad2);//---------------------------------------
 
-        mexicanFlagCommand  = robotState.mexicanFlagCommand(gamepad2);
+        mexicanFlagCommand = robotState.mexicanFlagCommand(gamepad2);
         autoHookDepose = robotState.automaticHookDepose();
 
         register(tankDriveSubsystem, climberSubsystem, climberLockSubsystem, linearSystemSubsystem, intakeSubsystem, toucheSubsystem);
@@ -88,16 +90,16 @@ public class El_Profeta_TeleOp extends ClockMode_V7 {
 
         new GamepadButton(gamepadEx2, GamepadKeys.Button.DPAD_UP)
                 .whileHeld(robotState.dpadUpCommand());
-                //.whileHeld(changeGamepadConfig ? robotState.ManualLift() : new InstantCommand(() -> robotState.compressorTrajectory().schedule()));
+        //.whileHeld(changeGamepadConfig ? robotState.ManualLift() : new InstantCommand(() -> robotState.compressorTrajectory().schedule()));
 
         new GamepadButton(gamepadEx2, GamepadKeys.Button.RIGHT_BUMPER)
                 .whileHeld(robotState.rightBumperCommand());
 
         new GamepadButton(gamepadEx2, GamepadKeys.Button.LEFT_BUMPER)
-                .whileHeld(()->robotState.setToucheMode(ToucheMode.RETRACT));
+                .whileHeld(() -> robotState.setToucheMode(ToucheMode.RETRACT));
 
         new GamepadButton(gamepadEx1, GamepadKeys.Button.A)
-                .whileHeld(()->robotState.setToucheMode(ToucheMode.RETRACT));
+                .whileHeld(() -> robotState.setToucheMode(ToucheMode.RETRACT));
 
         //Automatic Hook Depose
         //new GamepadButton(gamepadEx2, GamepadKeys.Button.DPAD_RIGHT)
@@ -114,18 +116,18 @@ public class El_Profeta_TeleOp extends ClockMode_V7 {
                 .whenPressed(() -> robotState.setClimberLockMode(LockMode.OPEN));
 
         new GamepadButton(gamepadEx2, GamepadKeys.Button.X)
-                .whenPressed(()->robotState.setClimberLockMode(LockMode.CLOSE));
-                //.whenPressed(robotState.closeLock());
+                .whenPressed(() -> robotState.setClimberLockMode(LockMode.CLOSE));
+        //.whenPressed(robotState.closeLock());
 
         //Cancel Autonomous Routines
         new GamepadButton(gamepadEx2, GamepadKeys.Button.B)
-                .whenPressed(() ->{
+                .whenPressed(() -> {
                     robotState.cancelAutonomousRoutines();
                     autoHookDepose.cancel();
                 });
         //Cancel Autonomous Routines
         new GamepadButton(gamepadEx1, GamepadKeys.Button.B)
-                .whenPressed(() ->{
+                .whenPressed(() -> {
                     robotState.cancelAutonomousRoutines();
                     autoHookDepose.cancel();
                 });
@@ -137,16 +139,16 @@ public class El_Profeta_TeleOp extends ClockMode_V7 {
         new GamepadButton(gamepadEx2, GamepadKeys.Button.A)
                 .whileHeld(robotState.ManualDown());
 
-        schedule(new RunCommand(()->{
-            if(!mexicanFlagCommand.isScheduled())
-                mexicanFlag.JustOneTime(true,()->{
+        schedule(new RunCommand(() -> {
+            if (!mexicanFlagCommand.isScheduled())
+                mexicanFlag.JustOneTime(true, () -> {
                     mexicanFlagCommand.schedule();
                 });
 
-            if(mexicanFlagCommand.isFinished())
+            if (mexicanFlagCommand.isFinished())
                 mexicanFlag.resetFlagToFalse();
 
-                setExtraStates("buebos","is auto hook scheduled: " + autoHookDepose.isScheduled());
+            setExtraStates("buebos", "is auto hook scheduled: " + autoHookDepose.isScheduled());
         }));
         //schedule(new InstantCommand(()->robotState.mexicanFlagComamnd(gamepad2).schedule()));
 
@@ -187,7 +189,7 @@ public class El_Profeta_TeleOp extends ClockMode_V7 {
         enablePrintSensorsStates();
         enableInitBeforeEndgame();
         enablePrintExtraStates();
-        disableDebuggingMode();
+        //disableDebuggingMode();
         return CompetitionStages.TELEOP;
     }
 
@@ -214,35 +216,37 @@ public class El_Profeta_TeleOp extends ClockMode_V7 {
         intakeSubsystem.setDefaultCommand(new IntakeCommand(intakeSubsystem));
 
 
-        new GamepadButton(gamepadEx1, GamepadKeys.Button.B)
-                .whenPressed(() -> toucheSubsystem.setActualMode(ToucheMode.RETRACT));
-
-        new GamepadButton(gamepadEx1, GamepadKeys.Button.X)
+        new GamepadButton(gamepadEx2, GamepadKeys.Button.X)
                 .whenPressed(() -> toucheSubsystem.setActualMode(ToucheMode.TOUCHE_MODE));
 
         //climber manual
-        new GamepadButton(gamepadEx1, GamepadKeys.Button.Y)
+        new GamepadButton(gamepadEx2, GamepadKeys.Button.Y)
                 .whileHeld(() -> climberSubsystem.setActualMode(ClimberModes.CLIMB))
                 .whenReleased(() -> climberSubsystem.setActualMode(ClimberModes.OFF));
 
-        new GamepadButton(gamepadEx1, GamepadKeys.Button.A)
+        new GamepadButton(gamepadEx2, GamepadKeys.Button.A)
                 .whileHeld(() -> climberSubsystem.setActualMode(ClimberModes.GO_DOWN))
                 .whenReleased(() -> climberSubsystem.setActualMode(ClimberModes.OFF));
 
         //Linear System Manual
-        new GamepadButton(gamepadEx1, GamepadKeys.Button.DPAD_UP)
-                .whileHeld(() -> linearSystemSubsystem.setActualMode(LinearSystemModes.LIFT_ARM))
-                .whenReleased(() -> linearSystemSubsystem.setActualMode(LinearSystemModes.OFF));
+        new GamepadButton(gamepadEx2, GamepadKeys.Button.DPAD_UP)
+                .whenPressed(() -> linearSystemSubsystem.setActualMode(LinearSystemModes.AUTOMATIC_ARM_UP));
+        //.whenReleased(() -> linearSystemSubsystem.setActualMode(LinearSystemModes.OFF));
 
-        new GamepadButton(gamepadEx1, GamepadKeys.Button.DPAD_DOWN)
-                .whileHeld(() -> linearSystemSubsystem.setActualMode(LinearSystemModes.RETRACT_ARM))
-                .whenReleased(() -> linearSystemSubsystem.setActualMode(LinearSystemModes.OFF));
+        new GamepadButton(gamepadEx2, GamepadKeys.Button.DPAD_DOWN)
+                .whenPressed(() -> linearSystemSubsystem.setActualMode(LinearSystemModes.AUTOMATIC_RETRACTION));
+        //.whenReleased(() -> linearSystemSubsystem.setActualMode(LinearSystemModes.OFF));
 
         //ClimberLock
-        new GamepadButton(gamepadEx1, GamepadKeys.Button.DPAD_RIGHT)
-                .whenPressed(() -> climberLockSubsystem.setActualMode(LockMode.OPEN));
+        new GamepadButton(gamepadEx2, GamepadKeys.Button.B)
+                .whenPressed(() -> {
+                    toucheSubsystem.setActualMode(ToucheMode.RETRACT);
+                    climberLockSubsystem.setActualMode(LockMode.OPEN);
+                    tankDriveSubsystem.setActualTrajectoryMode(DriveTrajectories.NON_AUTO);
+                    tankDriveSubsystem.setActualMode(DriveModes.CANCEL_AUTONOMOUS_DRIVE);
+                });
 
-        new GamepadButton(gamepadEx1, GamepadKeys.Button.DPAD_LEFT)
+        new GamepadButton(gamepadEx2, GamepadKeys.Button.RIGHT_BUMPER)
                 .whenPressed(() -> climberLockSubsystem.setActualMode(LockMode.CLOSE));
 
         //Manual Intake

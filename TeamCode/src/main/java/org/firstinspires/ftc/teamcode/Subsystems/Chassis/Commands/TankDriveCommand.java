@@ -30,6 +30,7 @@ public class TankDriveCommand extends CommandBase {
     private ToucheSubsystem toucheSubsystem;
     private LinearSystemSubsystem linearSystemSubsystem;
     public static boolean show_data_2_dash = false;
+    public static double distance_to_high = 6;//Maybe y 7in
 
     private final DoubleSupplier leftY;
     private final DoubleSupplier rightX;
@@ -134,7 +135,7 @@ public class TankDriveCommand extends CommandBase {
                                 .setReversed(false)
                                 //.splineTo(new Vector2d(-10, 59), Math.toRadians(0))
                                 //.back(70)
-                                .forward(9)
+                                .forward(distance_to_high)
                                 .build();
 
                         trajectoryEnabled = true;
