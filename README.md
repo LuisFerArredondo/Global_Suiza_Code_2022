@@ -1,4 +1,4 @@
-# proyect template for ftc by TeamMexico
+# proyect template for ftc by TeamMexico 2022
 
 This proyect uses the following libraries:
 
