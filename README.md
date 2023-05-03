@@ -11,7 +11,7 @@ FTCLib is a library intended to be a port of WPILib, which is the standard progr
 
 ## Installation
 
-1. Download or clone this repo with `git clone https://github.com/TeamCerbotics4400/Team15600-Lib.git`.
+1. Download or clone this repo with `https://github.com/LuisFerArredondo/Global_Suiza_Code_2022.git`.
 
 1. Open the project in Android Studio and build `TeamCode` like any other `ftc_app` project.
 
