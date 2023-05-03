@@ -1,4 +1,4 @@
-# Team 15600 proyect template
+# proyect template for ftc by TeamMexico
 
 This proyect uses the following libraries:
 
